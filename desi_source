@@ -1,0 +1,53 @@
+#!/bin/bash
+
+show_help () {
+    echo "" >&2
+    echo "Usage:  $0 <version file>" >&2
+    echo "" >&2
+    echo "    Packages will be cloned / checked out in the current" >&2
+    echo "    working directory.  Format of the version file is 3" >&2
+    echo "    columns of <package name> <git URL> <branch name>" >&2
+    echo "" >&2
+    echo "" >&2
+}
+
+versionfile="$1"
+if [ "x${versionfile}" == "x" ]; then
+    show_help
+    exit 1
+fi
+
+# our install directory
+prefix=`pwd -P`
+
+# get the absolute path to the directory with this script
+pushd `dirname $0` > /dev/null
+base=`pwd -P`
+popd > /dev/null
+
+# process all packages
+
+while IFS='' read -r line || [[ -n "${line}" ]]; do
+    pkg=`echo ${line} | gawk '{print $1}'`
+    url=`echo ${line} | gawk '{print $2}'`
+    branch=`echo ${line} | gawk '{print $3}'`
+
+    if [ ! -d "${pkg}" ]; then
+        git clone "${url}"
+    else
+        echo "Clone for ${pkg} already exists"
+    fi
+
+    cd "${pkg}"
+    git fetch
+    git remote prune origin
+    found=`git branch --list | grep ${branch}`
+    if [ "x${found}" = "x" ]; then
+        git checkout -b ${branch} -t origin/${branch}
+    else
+        git checkout ${branch}
+    fi
+    git rebase origin/${branch}
+    cd ..
+done < "${versionfile}"
+
