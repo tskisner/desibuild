@@ -1,0 +1,8 @@
+desiutil    git@github.com:desihub/desiutil.git     master
+desimodel   git@github.com:desihub/desimodel.git	master
+desitarget  git@github.com:desihub/desitarget.git	master
+desisim     git@github.com:desihub/desisim.git		master
+specter     git@github.com:desihub/specter.git		master
+specex      git@github.com:desihub/specex.git       master
+desispec    git@github.com:desihub/desispec.git		master
+redmonster  git@github.com:desihub/redmonster.git   master

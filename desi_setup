@@ -1,0 +1,99 @@
+#!/bin/bash
+
+show_help () {
+    echo "" >&2
+    echo "Usage:  $0" >&2
+    echo "    -p <prefix>" >&2
+    echo "    -v <version file>" >&2
+    echo "" >&2
+    echo "    Install current git clone states into prefix.  Only the" >&2
+    echo "    packages specified in the version file will be installed." >&2
+    echo "    This script should be run from the directory containing" >&2
+    echo "    your git clones."
+    echo "" >&2
+    echo "" >&2
+}
+
+prefix=""
+versionfile=""
+
+while getopts ":p:v:" opt; do
+    case $opt in
+        p)
+            prefix=$OPTARG
+            ;;
+        v)
+            versionfile=$OPTARG
+            ;;
+        \?)
+            show_help
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [ "x$prefix" = "x" ]; then
+    show_help
+    exit 1
+fi
+
+if [ "x${versionfile}" == "x" ]; then
+    show_help
+    exit 1
+fi
+
+# source directory
+srcdir=`pwd -P`
+
+# get the absolute path to the directory with this script
+pushd `dirname $0` > /dev/null
+base=`pwd -P`
+popd > /dev/null
+
+# version of python site directory
+pysite=`python --version 2>&1 | gawk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..*#\1.\2#"`
+
+# create prefix if needed
+mkdir -p "${prefix}/bin"
+mkdir -p "${prefix}/include"
+mkdir -p "${prefix}/lib/python${pysite}/site-packages"
+
+# create the shell snippet that exports version strings
+setup="${prefix}/setup.sh"
+echo "# Versions of DESI packages" > "${setup}"
+
+# process all packages
+
+depstr=""
+
+while IFS='' read -r line || [[ -n "${line}" ]]; do
+    pkg=`echo ${line} | gawk '{print $1}'`
+
+    cd "${pkg}"
+    ver=`git branch | grep -e '^\*' | gawk '{print $2}'`
+    if [ "${pkg}" = "specex" ]; then
+        SPECEX_PREFIX=${prefix} make install
+    else
+        if [ "${pkg}" = "redmonster" ]; then
+            echo "Redmonster installed"
+        else
+            python setup.py install --prefix=${prefix}
+        fi
+    fi
+    pkgup=`echo ${pkg} | tr '[:lower:]' '[:upper:]'`
+    echo "export DESI_VERSION_${pkgup}=\"${ver}\"" >> "${setup}"
+    depstr="${depstr}${ver}"
+    cd ..
+done < "${versionfile}"
+
+desiver=`echo ${depstr} | md5sum | cut -c1-8`
+echo "export DESI_VERSION=\"${desiver}\"" >> "${setup}"
+echo "" >> "${setup}"
+

@@ -6,7 +6,7 @@ show_help () {
     echo "" >&2
     echo "    Packages will be cloned / checked out in the current" >&2
     echo "    working directory.  Format of the version file is 3" >&2
-    echo "    columns of <package name> <git URL> <branch name>" >&2
+    echo "    columns of <package name> <git URL> <branch/tag name>" >&2
     echo "" >&2
     echo "" >&2
 }
@@ -33,6 +33,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
     branch=`echo ${line} | gawk '{print $3}'`
 
     if [ ! -d "${pkg}" ]; then
+        echo "Cloning ${pkg}"
         git clone "${url}"
     else
         echo "Clone for ${pkg} already exists"
@@ -48,6 +49,11 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
         git checkout ${branch}
     fi
     git rebase origin/${branch}
+    if [ "${pkg}" = "specex" ]; then
+        make clean
+    else
+        python setup.py clean
+    fi
     cd ..
 done < "${versionfile}"
 
