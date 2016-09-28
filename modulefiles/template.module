@@ -1,0 +1,20 @@
+#%Module###<-magic cookie ####################################################
+##
+##   DESI package "@PACKAGE@"
+##
+##
+
+module-whatis "Loads desi package @PACKAGE@"
+
+proc ModulesHelp { } {
+  global version
+  puts stderr "\t\t DESI package @PACKAGE@ - Version @VERSION@\n"
+  puts stderr "\t This modifies the shell environment to use an installed"
+  puts stderr "\t version of @PACKAGE@."
+  puts stderr ""
+}
+
+conflict desi-@PACKAGE@
+
+setenv DESI@UPPACKAGE@_VERSION "@VERSION@"
+
