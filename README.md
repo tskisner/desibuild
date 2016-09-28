@@ -45,7 +45,17 @@ installed on your system.  You also need to create / use a text file listing
 the git branch/tag of each package.  Since we will be running many git
 commands (when using the desi_source script), I highly recommend setting
 up your ssh keys with a keychain, so that you don't have to type your
-password dozens of times.
+password dozens of times.  For example, at NERSC you can download this:
+
+    http://www.funtoo.org/Keychain
+
+and place the "keychain" shell script in your $PATH somewhere.  Then add
+the line:
+
+    eval `keychain --eval --agents ssh id_rsa`
+
+somewhere in your ~/.bashrc.ext
+
 
 ### Dependencies
 
@@ -69,9 +79,11 @@ packages and their versions to install.  When this finishes, you should
 have a git clone of every repo, and the working state inside each clone 
 should be set to a local checkout of the specified branch/tag.
 
-NOTE:  At this point you can go into those git clones and make new branches,
-etc.  Whatever branch is checked out in each package is the one that will
-be installed.
+**NOTE:**  At this point you can go into those git clones and make new
+branches, etc.  Whatever branch is checked out in each package is the one
+that will be installed.  If you are working on multiple packages, just run
+desi_source once with master.txt and then go create / checkout all the branches
+you need across multiple packages!
 
 ### Install the Packages
 
