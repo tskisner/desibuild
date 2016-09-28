@@ -28,36 +28,75 @@ popd > /dev/null
 # process all packages
 
 while IFS='' read -r line || [[ -n "${line}" ]]; do
+    # parse the package info
     pkg=$(echo ${line} | gawk '{print $1}')
     url=$(echo ${line} | gawk '{print $2}')
     branch=$(echo ${line} | gawk '{print $3}')
 
+    logfile="source_${pkg}"
+    rm -f "${logfile}"
+
+    echo "Working on ${pkg}"
+
+    # clone the repo if needed
     if [ ! -d "${pkg}" ]; then
-        echo "Cloning ${pkg}"
-        git clone "${url}"
+        echo "  Cloning ${pkg}"
+        git clone "${url}" >> "${logfile}" 2>&1
     else
-        echo "Clone for ${pkg} already exists"
+        echo "  Clone for ${pkg} already exists"
     fi
+
+    # sync our local info with origin
+    echo "  Syncing local clone with origin"
 
     cd "${pkg}"
-    git fetch
-    git remote prune origin
-    found=$(git branch --list | grep ${branch})
-    if [ "x${found}" = "x" ]; then
-        git checkout -b ${branch} -t origin/${branch}
+    git fetch >> "${logfile}" 2>&1
+    git remote prune origin >> "${logfile}" 2>&1
+
+    # is the requested branch actually a tag?
+    found=$(git tag --list 2>/dev/null | grep ${branch})
+    if [ "x${found}" != "x" ]; then
+        echo "  Version ${branch} is a valid git tag"
+
+        # does a working branch already exist for this tag?
+        workb="work-${branch}"
+        havework=$(git branch --list 2>/dev/null | grep ${workb})
+        if [ "x${havework}" = "x" ]; then
+            # create a working branch
+            echo "    Creating new working branch for tag ${branch}"
+            git checkout -b ${workb} tags/${branch} >> "${logfile}" 2>&1
+        else
+            # checkout the working branch
+            echo "    Checking out existing working branch for tag ${branch}"
+            git checkout ${workb} >> "${logfile}" 2>&1
+        fi
     else
-        git checkout ${branch}
+        found=$(git branch --list 2>/dev/null | grep ${branch})
+        if [ "x${found}" = "x" ]; then
+            echo "  Creating local branch ${branch}"
+            # create a local branch from requested remote branch
+            git checkout -b ${branch} -t origin/${branch} >> "${logfile}" 2>&1
+        else
+            echo "  Checking out existing local branch ${branch}"
+            # we already have a local branch with the requested name
+            git checkout ${branch} >> "${logfile}" 2>&1
+            echo "    Rebasing local branch ${branch} against origin"
+            # make sure we are up to date
+            git rebase origin/${branch} >> "${logfile}" 2>&1
+        fi
+        
     fi
-    git rebase origin/${branch}
+
+    echo "  Cleaning package"
 
     if [ "${pkg}" = "specex" ]; then
-        make clean
+        make clean >> "${logfile}" 2>&1
     elif [ "${pkg}" = "fiberassign" ]; then
-        make clean
+        make clean >> "${logfile}" 2>&1
     elif [ "${pkg}" = "redmonster" ]; then
         echo "" >/dev/null
     else
-        python setup.py clean
+        python setup.py clean >> "${logfile}" 2>&1
     fi
     
     cd ..

@@ -1,0 +1,10 @@
+desiutil        git@github.com:desihub/desiutil.git         1.8.0
+desimodel       git@github.com:desihub/desimodel.git	    0.4.5
+specsim         git@github.com:desihub/specsim.git          v0.5
+desitarget      git@github.com:desihub/desitarget.git	    0.6.1
+desisim         git@github.com:desihub/desisim.git		    0.14.0
+fiberassign     git@github.com:desihub/fiberassign.git      master
+specter         git@github.com:desihub/specter.git		    0.6.0
+specex          git@github.com:desihub/specex.git           0.4.0
+desispec        git@github.com:desihub/desispec.git		    0.10.0
+redmonster      git@github.com:desihub/redmonster.git       master

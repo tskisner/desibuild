@@ -44,11 +44,17 @@ install_packages () {
         cd "${pkg}"
         pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
         pkghash=$(git rev-parse --short HEAD)
+
+        # if the branch has a special name (work-<blah>), then it
+        # is actually a working branch created from a tag by desi_source.
+        # strip that off.
+        pkgtag=$(echo ${pkgtag} | sed -e "s#work-##")
+
         pkgver="${pkgtag}-${pkghash}"
 
         # set package prefix
         pkgprefix="${prefix}/${pkg}_${pkgver}"
-        mkdir -p "${pkgprefix}" 2>&1 >> "${logfile}"
+        mkdir -p "${pkgprefix}" >> "${logfile}" 2>&1
         
         # uppercase package name
         pkgup=$(echo ${pkg} | tr '[:lower:]' '[:upper:]')
@@ -60,7 +66,7 @@ install_packages () {
         echo "export DESI_${pkgup}_VERSION=\"${pkgver}\"" >> "${setup}"
 
         pkgmoddir="${moddir}/${pkg}"
-        mkdir -p "${pkgmoddir}" 2>&1 >> "${logfile}"
+        mkdir -p "${pkgmoddir}" >> "${logfile}" 2>&1
 
         outmod="${pkgmoddir}/${pkgver}"
         outver="${pkgmoddir}/.version_new"
@@ -80,8 +86,8 @@ install_packages () {
 
             # This package has executables and compiled libraries
 
-            mkdir -p "${pkgprefix}/bin" 2>&1 >> "${logfile}"
-            mkdir -p "${pkgprefix}/lib" 2>&1 >> "${logfile}"
+            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+            mkdir -p "${pkgprefix}/lib" >> "${logfile}" 2>&1
 
             export PATH="${pkgprefix}/bin:${PATH}"
             echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
@@ -104,14 +110,14 @@ install_packages () {
             echo "prepend-path LD_LIBRARY_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
             echo "setenv HARP_PLUGIN_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
 
-            eval "SPECEX_PREFIX=\"${pkgprefix}\" make install" 2>&1 >> "${logfile}"
+            eval "SPECEX_PREFIX=\"${pkgprefix}\" make install" >> "${logfile}" 2>&1
 
         elif [ "${pkg}" = "fiberassign" ]; then
 
             # This package has executables and a python package.
 
-            mkdir -p "${pkgprefix}/bin" 2>&1 >> "${logfile}"
-            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" 2>&1 >> "${logfile}"
+            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
             
             export PATH="${pkgprefix}/bin:${PATH}"
             echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
@@ -124,21 +130,21 @@ install_packages () {
 
             # First install compiled code
 
-            eval "INSTALL=\"${pkgprefix}/bin\" make install" 2>&1 >> "${logfile}"
+            eval "INSTALL=\"${pkgprefix}/bin\" make install" >> "${logfile}" 2>&1
 
             # Now copy scripts and python package into place
 
-            cp -a bin/* "${pkgprefix}/bin/" 2>&1 >> "${logfile}"
-            chmod -R +x "${pkgprefix}/bin/" 2>&1 >> "${logfile}"
-            cp -a py/fiberassign "${pkgprefix}/lib/python${pysite}/site-packages/" 2>&1 >> "${logfile}"
+            cp -a bin/* "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+            chmod -R +x "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+            cp -a py/fiberassign "${pkgprefix}/lib/python${pysite}/site-packages/" >> "${logfile}" 2>&1
 
-            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" 2>&1 > "${logfile}"
+            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
 
         elif [ "${pkg}" = "redmonster" ]; then
 
             # We just copy the source tree into the install prefix...
 
-            cp -a * "${pkgprefix}/" 2>&1 >> "${logfile}"
+            cp -a * "${pkgprefix}/" >> "${logfile}" 2>&1
 
             export PATH="${pkgprefix}/bin:${PATH}"
             echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
@@ -153,7 +159,7 @@ install_packages () {
             echo "prepend-path PYTHONPATH \"${pkgprefix}/python\"" >> "${outmod}"
             echo "setenv REDMONSTER_TEMPLATES_DIR \"${pkgprefix}/templates\"" >> "${outmod}"
 
-            python -m compileall -f "${pkgprefix}/python" 2>&1 > "${logfile}"
+            python -m compileall -f "${pkgprefix}/python" >> "${logfile}" 2>&1
 
             echo "Redmonster installed" >> "${logfile}"
 
@@ -161,8 +167,8 @@ install_packages () {
 
             # Assume that this is just a standard DESI python package
 
-            mkdir -p "${pkgprefix}/bin" 2>&1 >> "${logfile}"
-            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" 2>&1 >> "${logfile}"
+            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
 
             export PATH="${pkgprefix}/bin:${PATH}"
             echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
@@ -173,9 +179,9 @@ install_packages () {
             echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
             echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
 
-            python setup.py install --prefix=${pkgprefix} 2>&1 >> "${logfile}"
+            python setup.py install --prefix=${pkgprefix} >> "${logfile}" 2>&1
 
-            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" 2>&1 > "${logfile}"
+            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
 
         fi
 

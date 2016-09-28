@@ -79,7 +79,7 @@ Decide where you want to install things.  At NERSC, you should put everything
 in your ${SCRATCH} directory somewhere for performance.  Also, if there are
 any module commands needed to set up your dependencies, then those commands
 should be in a snippet of text that will be inserted into the top level module
-file.  For NERSC systems, you should use one of the "init.*" examples in the 
+file.  For NERSC systems, you should use one of the examples in the 
 "modulefiles" directory unless you know what you are doing.  On a personal 
 system or other HPC center, ensure that you know what module commands are 
 needed to get the python stack and other dependencies into your environment.  
@@ -107,3 +107,16 @@ Otherwise, you can now do:
 
 Where "prefix" is obviously what you specified with the "-p" option to 
 desi_setup.  All DESI software is now ready to use.
+
+### Set Default Versions
+
+Just installing the packages and module files in the previous section does
+*NOT* change the default versions of any module files.  Instead it creates
+a temporary ".version" file that is ready to be moved into place.  To make
+your freshly installed software the default just do:
+
+    $>  ../desi_updatemod -p <prefix>
+
+and now running "module avail" should reflect the change in the default
+module versions.
+
