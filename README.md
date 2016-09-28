@@ -82,7 +82,7 @@ should be in a snippet of text that will be inserted into the top level module
 file.  For NERSC systems, you should use one of the examples in the 
 "modulefiles" directory unless you know what you are doing.  On a personal 
 system or other HPC center, ensure that you know what module commands are 
-needed to get the python stack and other dependencies into your environment.  
+needed to get the python stack and other dependencies into your environment.
 Put those into a module file snippet.  Now we install all packages.  This 
 command will use the *current state* of all the git clones.  So if you made 
 a local branch after getting the source with "desi_source", then that is 
