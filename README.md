@@ -100,4 +100,4 @@ created in the installation prefix.  Otherwise, you can now do::
     $>  module use <prefix>/modulefiles
     $>  module load desi
 
-Where <prefix> is obviously what you specified with the "-p" option to desi_setup.
+Where "prefix" is obviously what you specified with the "-p" option to desi_setup.
