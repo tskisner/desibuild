@@ -1,7 +1,7 @@
 
 if [ module-info mode load ] {
   module use /global/common/edison/contrib/desi/modulefiles
-  module load desi-conda/2.7-20160913
+  module load desi-conda/3.5-20160913
 }
 
 setenv DESI_ROOT /project/projectdirs/desi
