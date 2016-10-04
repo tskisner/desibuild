@@ -55,11 +55,15 @@ password dozens of times.  For example, at NERSC you can download this:
     http://www.funtoo.org/Keychain
 
 and place the "keychain" shell script in your $PATH somewhere.  Then add
-the line:
+the lines:
 
-    eval `keychain --eval --agents ssh id_rsa`
+    # start ssh keychain
+    keystart () {
+        eval `keychain --eval --agents ssh id_rsa`
+    }
 
-somewhere in your ~/.bashrc.ext
+somewhere in your ~/.bashrc.ext.  Whenever you want to unlock your ssh
+(probably once per session), just do "keystart".
 
 
 ### Dependencies
