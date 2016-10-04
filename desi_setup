@@ -1,11 +1,13 @@
 #!/bin/bash
 
+
 show_help () {
     echo "" >&2
     echo "Usage:  $0" >&2
     echo "    -p <prefix>" >&2
     echo "    -v <version file>" >&2
     echo "    -e <module init>" >&2
+    echo "    [-s <directory of single package to install>]" >&2
     echo "" >&2
     echo "    Install current git clone states into prefix.  Only the" >&2
     echo "    packages specified in the version file will be installed." >&2
@@ -13,8 +15,209 @@ show_help () {
     echo "    your git clones.  The module init file should contain" >&2
     echo "    module file commands to load external dependencies." >&2
     echo "" >&2
+    echo "    Alternatively, specify the directory containing a single" >&2
+    echo "    package to install, as well as the prefix for the" >&2
+    echo "    installation.  The name of the package is inferred from" >&2
+    echo "    the basename of the directory."
+    echo "" >&2
     echo "" >&2
 }
+
+
+get_pkg_version () {
+    # get package version from current git
+    pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
+    pkghash=$(git rev-parse --short HEAD)
+
+    # if the branch has a special name (work-<blah>), then it
+    # is actually a working branch created from a tag by desi_source.
+    # strip that off.  If this is a tag, then the hash is
+    # redundant so we do not include it.
+
+    is_tag=$(echo ${pkgtag} | sed -e "s#work-.*#yes#")
+    if [ "${is_tag}" = "yes" ]; then
+        pkgtag=$(echo ${pkgtag} | sed -e "s#work-##")
+        pkgver="${pkgtag}"
+    else
+        pkgver="${pkgtag}-${pkghash}"
+    fi
+    echo "${pkgver}"
+}
+
+
+install_package () {
+    # This function is run in a subshell.  After the package is installed,
+    # it modifies the environment so that future packages can use previous
+    # ones.  The parent shell environment is not modified.
+
+    pkg="$1"
+    pkgdir="$2"
+    prefix="$3"
+    setup="$4"
+    moddir="$5"
+    modtemplate="$6"
+    vertemplate="$7"
+    logroot="$8"
+
+    mode="normal"
+
+    echo "Installing ${pkg}" >&2
+
+    if [ "x${logroot}" = "x" ]; then
+        logfile="/dev/stderr"
+        mode="single"
+    else
+        logfile="${logroot}_${pkg}"
+        rm -f "${logfile}"
+    fi
+
+    pushd "${pkgdir}" > /dev/null
+
+    pkgver=$(get_pkg_version)
+
+    # set package prefix
+    pkgprefix="${prefix}/${pkg}_${pkgver}"
+    mkdir -p "${pkgprefix}" >> "${logfile}" 2>&1
+    
+    # uppercase package name
+    pkgup=$(echo ${pkg} | tr '[:lower:]' '[:upper:]')
+
+    # add lines to the shell-snippet alternative to modulefiles,
+    # as well as installing the module files.
+
+    echo "# Settings for ${pkg}" >> "${setup}"
+    echo "export DESI_${pkgup}_VERSION=\"${pkgver}\"" >> "${setup}"
+
+    pkgmoddir="${moddir}/${pkg}"
+    mkdir -p "${pkgmoddir}" >> "${logfile}" 2>&1
+
+    outmod="${pkgmoddir}/${pkgver}"
+    outver="${pkgmoddir}/.version_new"
+
+    # install stub of module file
+    cat "${modtemplate}" | sed \
+        -e "s#@PACKAGE@#${pkg}#g" \
+        -e "s#@UPPACKAGE@#_${pkgup}#g" \
+        -e "s#@VERSION@#${pkgver}#g" \
+        > "${outmod}"
+
+    if [ "${mode}" != "single" ]; then
+        # install the module version file into the temporary location
+        cat "${vertemplate}" | sed -e "s#@VERSION@#${pkgver}#g" > "${outver}"
+    fi
+
+    # do the install
+    if [ "${pkg}" = "specex" ]; then
+
+        # This package has executables and compiled libraries
+
+        mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+        mkdir -p "${pkgprefix}/lib" >> "${logfile}" 2>&1
+
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+
+        export CPATH="${pkgprefix}/include:${CPATH}"
+        echo "export CPATH=\"${pkgprefix}/include:\${CPATH}\"" >> "${setup}"
+        
+        export LIBRARY_PATH="${pkgprefix}/lib:${LIBRARY_PATH}"
+        echo "export LIBRARY_PATH=\"${pkgprefix}/lib:\${LIBRARY_PATH}\"" >> "${setup}"
+        
+        export LD_LIBRARY_PATH="${pkgprefix}/lib:${LD_LIBRARY_PATH}"
+        echo "export LD_LIBRARY_PATH=\"${pkgprefix}/lib:\${LD_LIBRARY_PATH}\"" >> "${setup}"
+        
+        export HARP_PLUGIN_PATH="${pkgprefix}/lib"
+        echo "export HARP_PLUGIN_PATH=\"${pkgprefix}/lib\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path CPATH \"${pkgprefix}/include\"" >> "${outmod}"
+        echo "prepend-path LIBRARY_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
+        echo "prepend-path LD_LIBRARY_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
+        echo "setenv HARP_PLUGIN_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
+
+        eval "SPECEX_PREFIX=\"${pkgprefix}\" make install" >> "${logfile}" 2>&1
+
+    elif [ "${pkg}" = "fiberassign" ]; then
+
+        # This package has executables and a python package.
+
+        mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+        mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+        
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+
+        export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
+        echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
+
+        # First install compiled code
+
+        eval "INSTALL=\"${pkgprefix}/bin\" make install" >> "${logfile}" 2>&1
+
+        # Now copy scripts and python package into place
+
+        cp -a bin/* "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+        chmod -R +x "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+        cp -a py/fiberassign "${pkgprefix}/lib/python${pysite}/site-packages/" >> "${logfile}" 2>&1
+
+        python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+    elif [ "${pkg}" = "redmonster" ]; then
+
+        # We just copy the source tree into the install prefix...
+
+        cp -a * "${pkgprefix}/" >> "${logfile}" 2>&1
+
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+        
+        export PYTHONPATH="${pkgprefix}/python:${PYTHONPATH}"
+        echo "export PYTHONPATH=\"${pkgprefix}/python:\${PYTHONPATH}\"" >> "${setup}"
+        
+        export REDMONSTER_TEMPLATES_DIR="${pkgprefix}/templates"
+        echo "export REDMONSTER_TEMPLATES_DIR=\"${pkgprefix}/templates\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path PYTHONPATH \"${pkgprefix}/python\"" >> "${outmod}"
+        echo "setenv REDMONSTER_TEMPLATES_DIR \"${pkgprefix}/templates\"" >> "${outmod}"
+
+        python -m compileall -f "${pkgprefix}/python" >> "${logfile}" 2>&1
+
+        echo "Redmonster installed" >> "${logfile}"
+
+    else
+
+        # Assume that this is just a standard DESI python package
+
+        mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+        mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+        
+        export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
+        echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
+
+        python setup.py install --prefix=${pkgprefix} >> "${logfile}" 2>&1
+
+        python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+    fi
+
+    echo "" >> "${setup}"
+    echo "" >> "${outmod}"
+    
+    popd > /dev/null
+
+    echo "${pkgver}"
+}
+
 
 install_packages () {
     # This function is run in a subshell.  As each package is installed,
@@ -31,165 +234,15 @@ install_packages () {
     vertemplate="$6"
     logroot="$7"
 
+    dephash=""
+
     while IFS='' read -r line || [[ -n "${line}" ]]; do
         # get package name from versions file
         pkg=$(echo ${line} | gawk '{print $1}')
 
-        echo "Installing ${pkg}" >&2
-
-        logfile="${logroot}_${pkg}"
-        rm -f "${logfile}"
-
-        # get package version from current git
-        cd "${pkg}"
-        pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
-        pkghash=$(git rev-parse --short HEAD)
-
-        # if the branch has a special name (work-<blah>), then it
-        # is actually a working branch created from a tag by desi_source.
-        # strip that off.
-        pkgtag=$(echo ${pkgtag} | sed -e "s#work-##")
-
-        pkgver="${pkgtag}-${pkghash}"
-
-        # set package prefix
-        pkgprefix="${prefix}/${pkg}_${pkgver}"
-        mkdir -p "${pkgprefix}" >> "${logfile}" 2>&1
-        
-        # uppercase package name
-        pkgup=$(echo ${pkg} | tr '[:lower:]' '[:upper:]')
-
-        # add lines to the shell-snippet alternative to modulefiles,
-        # as well as installing the module files.
-
-        echo "# Settings for ${pkg}" >> "${setup}"
-        echo "export DESI_${pkgup}_VERSION=\"${pkgver}\"" >> "${setup}"
-
-        pkgmoddir="${moddir}/${pkg}"
-        mkdir -p "${pkgmoddir}" >> "${logfile}" 2>&1
-
-        outmod="${pkgmoddir}/${pkgver}"
-        outver="${pkgmoddir}/.version_new"
-
-        # install stub of module file
-        cat "${modtemplate}" | sed \
-            -e "s#@PACKAGE@#${pkg}#g" \
-            -e "s#@UPPACKAGE@#_${pkgup}#g" \
-            -e "s#@VERSION@#${pkgver}#g" \
-            > "${outmod}"
-
-        # install the module version file into the temporary location
-        cat "${vertemplate}" | sed -e "s#@VERSION@#${pkgver}#g" > "${outver}"
-
-        # do the install
-        if [ "${pkg}" = "specex" ]; then
-
-            # This package has executables and compiled libraries
-
-            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
-            mkdir -p "${pkgprefix}/lib" >> "${logfile}" 2>&1
-
-            export PATH="${pkgprefix}/bin:${PATH}"
-            echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
-
-            export CPATH="${pkgprefix}/include:${CPATH}"
-            echo "export CPATH=\"${pkgprefix}/include:\${CPATH}\"" >> "${setup}"
-            
-            export LIBRARY_PATH="${pkgprefix}/lib:${LIBRARY_PATH}"
-            echo "export LIBRARY_PATH=\"${pkgprefix}/lib:\${LIBRARY_PATH}\"" >> "${setup}"
-            
-            export LD_LIBRARY_PATH="${pkgprefix}/lib:${LD_LIBRARY_PATH}"
-            echo "export LD_LIBRARY_PATH=\"${pkgprefix}/lib:\${LD_LIBRARY_PATH}\"" >> "${setup}"
-            
-            export HARP_PLUGIN_PATH="${pkgprefix}/lib"
-            echo "export HARP_PLUGIN_PATH=\"${pkgprefix}/lib\"" >> "${setup}"
-
-            echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
-            echo "prepend-path CPATH \"${pkgprefix}/include\"" >> "${outmod}"
-            echo "prepend-path LIBRARY_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
-            echo "prepend-path LD_LIBRARY_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
-            echo "setenv HARP_PLUGIN_PATH \"${pkgprefix}/lib\"" >> "${outmod}"
-
-            eval "SPECEX_PREFIX=\"${pkgprefix}\" make install" >> "${logfile}" 2>&1
-
-        elif [ "${pkg}" = "fiberassign" ]; then
-
-            # This package has executables and a python package.
-
-            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
-            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
-            
-            export PATH="${pkgprefix}/bin:${PATH}"
-            echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
-
-            export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
-            echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
-
-            echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
-            echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
-
-            # First install compiled code
-
-            eval "INSTALL=\"${pkgprefix}/bin\" make install" >> "${logfile}" 2>&1
-
-            # Now copy scripts and python package into place
-
-            cp -a bin/* "${pkgprefix}/bin/" >> "${logfile}" 2>&1
-            chmod -R +x "${pkgprefix}/bin/" >> "${logfile}" 2>&1
-            cp -a py/fiberassign "${pkgprefix}/lib/python${pysite}/site-packages/" >> "${logfile}" 2>&1
-
-            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
-
-        elif [ "${pkg}" = "redmonster" ]; then
-
-            # We just copy the source tree into the install prefix...
-
-            cp -a * "${pkgprefix}/" >> "${logfile}" 2>&1
-
-            export PATH="${pkgprefix}/bin:${PATH}"
-            echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
-            
-            export PYTHONPATH="${pkgprefix}/python:${PYTHONPATH}"
-            echo "export PYTHONPATH=\"${pkgprefix}/python:\${PYTHONPATH}\"" >> "${setup}"
-            
-            export REDMONSTER_TEMPLATES_DIR="${pkgprefix}/templates"
-            echo "export REDMONSTER_TEMPLATES_DIR=\"${pkgprefix}/templates\"" >> "${setup}"
-
-            echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
-            echo "prepend-path PYTHONPATH \"${pkgprefix}/python\"" >> "${outmod}"
-            echo "setenv REDMONSTER_TEMPLATES_DIR \"${pkgprefix}/templates\"" >> "${outmod}"
-
-            python -m compileall -f "${pkgprefix}/python" >> "${logfile}" 2>&1
-
-            echo "Redmonster installed" >> "${logfile}"
-
-        else
-
-            # Assume that this is just a standard DESI python package
-
-            mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
-            mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
-
-            export PATH="${pkgprefix}/bin:${PATH}"
-            echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
-            
-            export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
-            echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
-
-            echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
-            echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
-
-            python setup.py install --prefix=${pkgprefix} >> "${logfile}" 2>&1
-
-            python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
-
-        fi
-
-        echo "" >> "${setup}"
-        echo "" >> "${outmod}"
+        pkgver=$(install_package "${pkg}" "${pkg}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}")
         
         dephash="${dephash}${pkgver}"
-        cd ..
 
     done < "${versionfile}"
 
@@ -201,8 +254,9 @@ install_packages () {
 prefix=""
 versionfile=""
 moduleinit=""
+single=""
 
-while getopts ":p:v:e:" opt; do
+while getopts ":p:v:e:s:" opt; do
     case $opt in
         p)
             prefix=$OPTARG
@@ -212,6 +266,9 @@ while getopts ":p:v:e:" opt; do
             ;;
         e)
             moduleinit=$OPTARG
+            ;;
+        s)
+            single=$OPTARG
             ;;
         \?)
             show_help
@@ -232,9 +289,11 @@ if [ "x${prefix}" = "x" ]; then
     exit 1
 fi
 
-if [ "x${versionfile}" == "x" ]; then
-    show_help
-    exit 1
+if [ "x${single}" == "x" ]; then
+    if [ "x${versionfile}" == "x" ]; then
+        show_help
+        exit 1
+    fi
 fi
 
 # directory with git clones (the current one)
@@ -255,82 +314,96 @@ pysite=$(python --version 2>&1 | gawk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..
 # create main prefix if needed
 mkdir -p "${prefix}"
 
-# create the shell-snippet alternative to modulefiles
-setup="${prefix}/setup.sh"
-echo "# Versions of DESI packages" > "${setup}"
-echo "" >> "${setup}"
-
 # create the modulefile directory
 moddir="${prefix}/modulefiles"
 mkdir -p "${moddir}"
 
 # what branch/tag of desibuild are we in?
 pushd "${base}" > /dev/null
-buildtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
-buildhash=$(git rev-parse --short HEAD)
+buildver=$(get_pkg_version)
 popd > /dev/null
 
-# process all packages
+if [ "x${single}" != "x" ]; then
+    # we are just installing a single package.  In this
+    # case, we will install a modulefile, but will not
+    # modify the main setup.sh shell snippet nor install
+    # a high-level desi module.
 
-logroot="${srcdir}/setup"
-dephash=$(install_packages "${versionfile}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}")
+    pkg=$(basename "${single}")
+    pkgver=$(install_package "${pkg}" "${single}" "${prefix}" "/dev/null" "${moddir}" "${modtemplate}" "${vertemplate}" "")
 
-# Now we create a top-level module file that loads the others.
+else
+    # we are doing a normal install using a version text
+    # file and installing the high level desi module.
 
-# make a truncated md5 sum of the dependency versions
-desihash=$(echo ${dephash} | md5sum | cut -c1-8)
+    # create the shell-snippet alternative to modulefiles
+    setup="${prefix}/setup.sh"
+    echo "# Versions of DESI packages" > "${setup}"
+    echo "" >> "${setup}"
 
-# build the main desi version from the desibuild git tag and the dependency hash
-desiver="${buildtag}-${buildhash}_${desihash}"
+    # process all packages
 
-echo "export DESI_VERSION=\"${desiver}\"" >> "${setup}"
-echo "" >> "${setup}"
+    logroot="${srcdir}/setup"
+    dephash=$(install_packages "${versionfile}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}")
 
-pkgmoddir="${moddir}/desi"
-mkdir -p "${pkgmoddir}"
+    # Now we create a top-level module file that loads the others.
 
-outmod="${pkgmoddir}/${desiver}"
-outver="${pkgmoddir}/.version_new"
+    # make a truncated md5 sum of the dependency versions
+    desihash=$(echo ${dephash} | md5sum | cut -c1-8)
 
-# install stub of module file
-cat "${modtemplate}" | sed \
-    -e "s#@PACKAGE@#desi#g" \
-    -e "s#@UPPACKAGE@##g" \
-    -e "s#@VERSION@#${desiver}#g" \
-    > "${outmod}"
+    # build the main desi version from the desibuild git tag and the dependency hash
+    desiver="${buildver}_${desihash}"
 
-echo "conflict desi" >> "${outmod}"
-echo "" >> "${outmod}"
+    echo "export DESI_VERSION=\"${desiver}\"" >> "${setup}"
+    echo "" >> "${setup}"
 
-# install the module version file into the temporary location
-cat "${vertemplate}" | sed -e "s#@VERSION@#${desiver}#g" > "${outver}"
+    pkgmoddir="${moddir}/desi"
+    mkdir -p "${pkgmoddir}"
 
-# load any init commands
-if [ "x${moduleinit}" != "x" ]; then
-    cat "${moduleinit}" >> "${outmod}"
-fi
+    outmod="${pkgmoddir}/${desiver}"
+    outver="${pkgmoddir}/.version_new"
 
-# iterate over the package versions and load them
+    # install stub of module file
+    cat "${modtemplate}" | sed \
+        -e "s#@PACKAGE@#desi#g" \
+        -e "s#@UPPACKAGE@##g" \
+        -e "s#@VERSION@#${desiver}#g" \
+        > "${outmod}"
 
-while IFS='' read -r line || [[ -n "${line}" ]]; do
-    pkg=$(echo ${line} | gawk '{print $1}')
+    echo "conflict desi" >> "${outmod}"
+    echo "" >> "${outmod}"
 
-    # get package version from current git
-    cd "${pkg}"
-    pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
-    pkghash=$(git rev-parse --short HEAD)
-    pkgver="${pkgtag}-${pkghash}"
+    # install the module version file into the temporary location
+    cat "${vertemplate}" | sed -e "s#@VERSION@#${desiver}#g" > "${outver}"
+
+    # load any init commands
+    if [ "x${moduleinit}" != "x" ]; then
+        cat "${moduleinit}" >> "${outmod}"
+    fi
+
+    # iterate over the package versions and load them
+
+    while IFS='' read -r line || [[ -n "${line}" ]]; do
+        pkg=$(echo ${line} | gawk '{print $1}')
+
+        # get package version from current git
+        cd "${pkg}"
+        pkgver=$(get_pkg_version)
+
+        echo "" >> "${outmod}"
+        echo "if [ module-info mode load ] {" >> "${outmod}"
+        echo "  if [ is-loaded ${pkg} ] {" >> "${outmod}"
+        echo "  } else {" >> "${outmod}"
+        echo "    module load ${pkg}/${pkgver}" >> "${outmod}"
+        echo "  }" >> "${outmod}"
+        echo "}" >> "${outmod}"
+
+        cd ..
+    done < "${versionfile}"
 
     echo "" >> "${outmod}"
-    echo "if [ module-info mode load ] {" >> "${outmod}"
-    echo "  if [ is-loaded ${pkg} ] {" >> "${outmod}"
-    echo "  } else {" >> "${outmod}"
-    echo "    module load ${pkg}/${pkgver}" >> "${outmod}"
-    echo "  }" >> "${outmod}"
-    echo "}" >> "${outmod}"
 
-    cd ..
-done < "${versionfile}"
+fi
 
-echo "" >> "${outmod}"
+
 

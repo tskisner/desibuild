@@ -19,6 +19,11 @@ unload the package you want to work on.  Say that you are working on package
 Now git clone desiblat somewhere and install it somewhere in your PATH / 
 PYTHONPATH.
 
+### I Already Installed Everything, but Now Want an Alternate Version of One Package
+
+You can run desi_setup in "single package" mode.  See the subsection under
+Installation.
+
 ### I Want to Install Everything, but with Custom Versions of Packages
 
 No problem.  You should copy one of the text files in the "versions"
@@ -119,6 +124,30 @@ Otherwise, you can now do:
 
 Where "prefix" is obviously what you specified with the "-p" option to 
 desi_setup.  All DESI software is now ready to use.
+
+### Install a Single Package
+
+Imagine you have already installed all the packages you want, but now want 
+to install an alternate version (like master) of a single package.  This is 
+just a convenience.  Obviously you could just unload the module for the package 
+you are testing, and then manually prepend to PATH and PYTHONPATH, etc.  
+However, you can also use desi_setup in "single package mode".  First load 
+your previous module stack to make sure any dependencies are loaded:
+
+    $>  module load desi
+
+Now go install a different version of one package:
+
+    $>  ../desi_setup \
+        -p <prefix> \
+        -s <path/to/git/clone/desiblat>
+
+In this example, we give the path to a clone of "desiblat" with the "-s" 
+option.  This will infer the package name from the path (desiblat in this 
+case).  It will then install the package to the prefix as usual.  It will 
+**NOT** create a new desi module file, and will not create a new module 
+version file.  You will have to manually swap/load this module file in order 
+to use it.
 
 ### Set Default Versions
 
