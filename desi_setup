@@ -76,7 +76,7 @@ install_package () {
     pkgver=$(get_pkg_version)
 
     # set package prefix
-    pkgprefix="${prefix}/${pkg}_${pkgver}"
+    pkgprefix="${prefix}/${pkg}/${pkgver}"
     mkdir -p "${pkgprefix}" >> "${logfile}" 2>&1
     
     # uppercase package name
