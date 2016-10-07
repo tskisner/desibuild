@@ -24,45 +24,57 @@ show_help () {
 }
 
 
+# Return value of get_pkg_version, to avoid spawning
+# a subshell.
+
+global_get_version=""
+
 get_pkg_version () {
     # get package version from current git
-    pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
-    pkghash=$(git rev-parse --short HEAD)
+    local pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
+    local pkghash=$(git rev-parse --short HEAD)
 
     # if the branch has a special name (work-<blah>), then it
     # is actually a working branch created from a tag by desi_source.
     # strip that off.  If this is a tag, then the hash is
     # redundant so we do not include it.
 
-    is_tag=$(echo ${pkgtag} | sed -e "s#work-.*#yes#")
+    local is_tag=$(echo ${pkgtag} | sed -e "s#work-.*#yes#")
     if [ "${is_tag}" = "yes" ]; then
         pkgtag=$(echo ${pkgtag} | sed -e "s#work-##")
-        pkgver="${pkgtag}"
+        global_get_version="${pkgtag}"
     else
-        pkgver="${pkgtag}-${pkghash}"
+        global_get_version="${pkgtag}-${pkghash}"
     fi
-    echo "${pkgver}"
 }
 
 
+# This is a global variable that is used when calling
+# the install_package function.  This is the return
+# value, and enables us to call the function in the 
+# same shell without spawning a subshell.
+
+global_pkgver=""
+
 install_package () {
-    # This function is run in a subshell.  After the package is installed,
-    # it modifies the environment so that future packages can use previous
-    # ones.  The parent shell environment is not modified.
+    # After the package is installed, it modifies the 
+    # environment so that future packages can use previous
+    # ones.
 
-    pkg="$1"
-    pkgdir="$2"
-    prefix="$3"
-    setup="$4"
-    moddir="$5"
-    modtemplate="$6"
-    vertemplate="$7"
-    logroot="$8"
+    local pkg="$1"
+    local pkgdir="$2"
+    local prefix="$3"
+    local setup="$4"
+    local moddir="$5"
+    local modtemplate="$6"
+    local vertemplate="$7"
+    local logroot="$8"
 
-    mode="normal"
+    local mode="normal"
 
     echo "Installing ${pkg}" >&2
 
+    local logfile=""
     if [ "x${logroot}" = "x" ]; then
         logfile="/dev/stderr"
         mode="single"
@@ -73,14 +85,15 @@ install_package () {
 
     pushd "${pkgdir}" > /dev/null
 
-    pkgver=$(get_pkg_version)
+    get_pkg_version
+    pkgver="${global_get_version}"
 
     # set package prefix
-    pkgprefix="${prefix}/${pkg}/${pkgver}"
+    local pkgprefix="${prefix}/${pkg}/${pkgver}"
     mkdir -p "${pkgprefix}" >> "${logfile}" 2>&1
     
     # uppercase package name
-    pkgup=$(echo ${pkg} | tr '[:lower:]' '[:upper:]')
+    local pkgup=$(echo ${pkg} | tr '[:lower:]' '[:upper:]')
 
     # add lines to the shell-snippet alternative to modulefiles,
     # as well as installing the module files.
@@ -88,11 +101,11 @@ install_package () {
     echo "# Settings for ${pkg}" >> "${setup}"
     echo "export DESI_${pkgup}_VERSION=\"${pkgver}\"" >> "${setup}"
 
-    pkgmoddir="${moddir}/${pkg}"
+    local pkgmoddir="${moddir}/${pkg}"
     mkdir -p "${pkgmoddir}" >> "${logfile}" 2>&1
 
-    outmod="${pkgmoddir}/${pkgver}"
-    outver="${pkgmoddir}/.version_new"
+    local outmod="${pkgmoddir}/${pkgver}"
+    local outver="${pkgmoddir}/.version_new"
 
     # install stub of module file
     cat "${modtemplate}" | sed \
@@ -215,7 +228,7 @@ install_package () {
     
     popd > /dev/null
 
-    echo "${pkgver}"
+    global_pkgver="${pkgver}"
 }
 
 
@@ -226,21 +239,24 @@ install_packages () {
     # listed in the version file should be in order of increasing
     # dependencies.
 
-    versionfile="$1"
-    prefix="$2"
-    setup="$3"
-    moddir="$4"
-    modtemplate="$5"
-    vertemplate="$6"
-    logroot="$7"
+    local versionfile="$1"
+    local prefix="$2"
+    local setup="$3"
+    local moddir="$4"
+    local modtemplate="$5"
+    local vertemplate="$6"
+    local logroot="$7"
 
-    dephash=""
+    local dephash=""
 
+    local pkg=""
+    
     while IFS='' read -r line || [[ -n "${line}" ]]; do
         # get package name from versions file
         pkg=$(echo ${line} | gawk '{print $1}')
 
-        pkgver=$(install_package "${pkg}" "${pkg}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}")
+        install_package "${pkg}" "${pkg}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}"
+        pkgver="${global_pkgver}"
         
         dephash="${dephash}${pkgver}"
 
@@ -320,7 +336,8 @@ mkdir -p "${moddir}"
 
 # what branch/tag of desibuild are we in?
 pushd "${base}" > /dev/null
-buildver=$(get_pkg_version)
+get_pkg_version
+buildver="${global_get_version}"
 popd > /dev/null
 
 if [ "x${single}" != "x" ]; then
@@ -330,7 +347,10 @@ if [ "x${single}" != "x" ]; then
     # a high-level desi module.
 
     pkg=$(basename "${single}")
-    pkgver=$(install_package "${pkg}" "${single}" "${prefix}" "/dev/null" "${moddir}" "${modtemplate}" "${vertemplate}" "")
+
+    install_package "${pkg}" "${single}" "${prefix}" "/dev/null" "${moddir}" "${modtemplate}" "${vertemplate}" ""
+    
+    pkgver="${global_pkgver}"
 
 else
     # we are doing a normal install using a version text
@@ -388,7 +408,8 @@ else
 
         # get package version from current git
         cd "${pkg}"
-        pkgver=$(get_pkg_version)
+        get_pkg_version
+        pkgver="${global_get_version}"
 
         echo "" >> "${outmod}"
         echo "if [ module-info mode load ] {" >> "${outmod}"
