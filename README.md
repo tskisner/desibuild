@@ -1,7 +1,9 @@
 # Scripts and Tools for Installation of DESI Software
 
 The idea behind these scripts is to keep them as simple as possible, but
-no simpler.
+no simpler.  **Disclaimer:**  These are the scripts I use when working on
+pipeline development.  They are posted here in case someone finds them 
+useful.  They are not official DESI products.
 
 ## Use Cases
 
