@@ -201,6 +201,32 @@ install_package () {
 
         echo "Redmonster installed" >> "${logfile}"
 
+    elif [ "${pkg}" = "teststand" ]; then
+
+        # We just copy the bin, data, and python directories
+        # into the prefix.
+
+        mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+        mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+
+        export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
+        echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
+
+        cp -a data "${pkgprefix}/" >> "${logfile}" 2>&1
+
+        cp -a bin/* "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+        chmod -R +x "${pkgprefix}/bin/" >> "${logfile}" 2>&1
+        
+        cp -a py/desispec_tools "${pkgprefix}/lib/python${pysite}/site-packages/" >> "${logfile}" 2>&1
+
+        python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
     else
 
         # Assume that this is just a standard DESI python package

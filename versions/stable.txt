@@ -6,5 +6,6 @@ desisim         git@github.com:desihub/desisim.git		    0.14.0
 fiberassign     git@github.com:desihub/fiberassign.git      master
 specter         git@github.com:desihub/specter.git		    0.6.0
 specex          git@github.com:desihub/specex.git           0.4.0
-desispec        git@github.com:desihub/desispec.git		    0.10.0
 redmonster      git@github.com:desihub/redmonster.git       master
+desispec        git@github.com:desihub/desispec.git		    0.10.0
+teststand       git@github.com:desihub/teststand.git        master
