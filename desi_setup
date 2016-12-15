@@ -31,7 +31,7 @@ global_get_version=""
 
 get_pkg_version () {
     # get package version from current git
-    local pkgtag=$(git branch | grep -e '^\*' | gawk '{print $2}')
+    local pkgtag=$(git branch | grep -e '^\*' | awk '{print $2}')
     local pkghash=$(git rev-parse --short HEAD)
 
     # if the branch has a special name (work-<blah>), then it
@@ -279,7 +279,7 @@ install_packages () {
     
     while IFS='' read -r line || [[ -n "${line}" ]]; do
         # get package name from versions file
-        pkg=$(echo ${line} | gawk '{print $1}')
+        pkg=$(echo ${line} | awk '{print $1}')
 
         install_package "${pkg}" "${pkg}" "${prefix}" "${setup}" "${moddir}" "${modtemplate}" "${vertemplate}" "${logroot}"
         pkgver="${global_pkgver}"
@@ -351,7 +351,7 @@ modtemplate="${base}/modulefiles/template.module"
 vertemplate="${base}/modulefiles/template.version"
 
 # version of python site directory
-pysite=$(python --version 2>&1 | gawk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..*#\1.\2#")
+pysite=$(python --version 2>&1 | awk '{print $2}' | sed -e "s#\(.*\)\.\(.*\)\..*#\1.\2#")
 
 # create main prefix if needed
 mkdir -p "${prefix}"
@@ -430,7 +430,7 @@ else
     # iterate over the package versions and load them
 
     while IFS='' read -r line || [[ -n "${line}" ]]; do
-        pkg=$(echo ${line} | gawk '{print $1}')
+        pkg=$(echo ${line} | awk '{print $1}')
 
         # get package version from current git
         cd "${pkg}"

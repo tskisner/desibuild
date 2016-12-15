@@ -29,9 +29,9 @@ popd > /dev/null
 
 while IFS='' read -r line || [[ -n "${line}" ]]; do
     # parse the package info
-    pkg=$(echo ${line} | gawk '{print $1}')
-    url=$(echo ${line} | gawk '{print $2}')
-    branch=$(echo ${line} | gawk '{print $3}')
+    pkg=$(echo ${line} | awk '{print $1}')
+    url=$(echo ${line} | awk '{print $2}')
+    branch=$(echo ${line} | awk '{print $3}')
 
     logfile="source_${pkg}"
     rm -f "${logfile}"
