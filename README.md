@@ -110,7 +110,8 @@ This single-directory mode is useful for development versions of the software
 or for installing into docker containers where only one version will be 
 present.
 
-If you are going to be using modules to load the installed software, determine any module commands needed to set up your dependencies.  Place
+If you are going to be using modules to load the installed software, 
+determine any module commands needed to set up your dependencies.  Place
 those commands into a small text file.  For NERSC systems, you should use one 
 of the examples in the "modulefiles" directory unless you know what you are 
 doing.  On a personal system or other HPC center, ensure that you know what 
@@ -120,9 +121,10 @@ your environment.
 
 ### Installing to Per-Package Directories
 
-This is the default, and versions per-package subdirectories will be created underneath the prefix location.  This command will use the 
-*current state* of all the git clones.  So if you made a local branch after 
-getting the source with "desi_source", then that is what will be installed:
+This is the default, and versioned per-package subdirectories will be created 
+underneath the prefix location.  This command will use the *current state* 
+of all the git clones.  So if you made a local branch after getting the 
+source with "desi_source", then that is what will be installed:
 
     $>  ../desi_setup \
         -p <prefix> \
@@ -144,7 +146,17 @@ Otherwise, you can now do:
 Where "prefix" is obviously what you specified with the "-p" option to 
 desi_setup.  All DESI software is now ready to use.
 
+
 ### Installing to a Single Directory
+
+Sometimes it is useful to install all DESI packages to a single prefix, and
+just have that one location in your environment.  This is particularly nice
+when doing development and also when installing to a fixed docker image.
+
+Simply pass the "-c" option to desi_setup.  The top-level setup.sh script
+and the "desi" modulefile will be created, but per-package module files
+obviously are redundant in this case.
+
 
 ### Install a Single Package
 
@@ -169,6 +181,11 @@ case).  It will then install the package to the prefix as usual.  It will
 **NOT** create a new desi module file, and will not create a new module 
 version file.  You will have to manually swap/load this module file in order 
 to use it.
+
+If you install a single package in "common prefix" mode (-c option), then
+this single package will replace any other versions of the package that are
+already installed to the common prefix.
+
 
 ### Set Default Versions
 
