@@ -1,0 +1,11 @@
+desiutil        https://github.com/desihub/desiutil.git         master
+desimodel       https://github.com/desihub/desimodel.git	    master
+specsim         https://github.com/desihub/specsim.git          master
+desitarget      https://github.com/desihub/desitarget.git	    master
+desisim         https://github.com/desihub/desisim.git		    master
+fiberassign     https://github.com/desihub/fiberassign.git      master
+specter         https://github.com/desihub/specter.git		    master
+specex          https://github.com/desihub/specex.git           master
+redmonster      https://github.com/desihub/redmonster.git       master
+desispec        https://github.com/desihub/desispec.git		    master
+teststand       https://github.com/desihub/teststand.git        master
