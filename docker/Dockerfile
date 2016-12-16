@@ -98,7 +98,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Copy MKL 11.3.3 headers into conda root
 
-COPY ./mkl_11.3.3_include/ /usr/local/conda/include/
+ADD mkl_11.3.3_include.tar.gz /usr/local/conda/include/
 
 # Install MPICH 3.2 which is compatible with the external
 # Cray MPICH which is prepended to LD_LIBRARY_PATH as part
@@ -175,7 +175,7 @@ RUN source /etc/profile.d/desi.sh \
 RUN source /etc/profile.d/desi.sh \
     && curl -SL https://github.com/tskisner/HARP/releases/download/v1.0.1/harp-1.0.1.tar.gz \
     -o harp-1.0.1.tar.gz \
-    && tar xvf harp-1.0.1.tar.gz \
+    && tar xzf harp-1.0.1.tar.gz \
     && cd harp-1.0.1 \
     && CFLAGS="-O3 -fPIC" CXXFLAGS="-O3 -fPIC" ./configure \
     --disable-mpi --disable-python \

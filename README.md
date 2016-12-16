@@ -75,6 +75,7 @@ At NERSC, you can load the "desi-conda" module.  On other systems, you
 will need a full python stack as well as some compiled packages (CFITSIO,
 BOOST, LAPACK, mpi4py, HARP).
 
+
 ### Get the Source
 
 Now make a working directory.  For this example, just put it in the top
@@ -96,20 +97,32 @@ that will be installed.  If you are working on multiple packages, just run
 desi_source once with master.txt and then go create / checkout all the branches
 you need across multiple packages!
 
-### Install the Packages
+
+### Installation Choices
 
 Decide where you want to install things.  At NERSC, you should put everything
-in your ${SCRATCH} directory somewhere for performance.  Also, if there are
-any module commands needed to set up your dependencies, then those commands
-should be in a snippet of text that will be inserted into the top level module
-file.  For NERSC systems, you should use one of the examples in the 
-"modulefiles" directory unless you know what you are doing.  On a personal 
-system or other HPC center, ensure that you know what module commands are 
-needed to get the python stack and other dependencies into your environment.
-Put those into a module file snippet.  Now we install all packages.  This 
-command will use the *current state* of all the git clones.  So if you made 
-a local branch after getting the source with "desi_source", then that is 
-what will be installed:
+in your ${SCRATCH} directory somewhere for performance.  You can also install
+software in two different configurations.  The default option installs all 
+packages to versioned directories and creates modulefiles and shell files to 
+load these into your environment.  Alternatively, you can install all 
+packages to the same directory, overwriting any previous versions that exist.
+This single-directory mode is useful for development versions of the software
+or for installing into docker containers where only one version will be 
+present.
+
+If you are going to be using modules to load the installed software, determine any module commands needed to set up your dependencies.  Place
+those commands into a small text file.  For NERSC systems, you should use one 
+of the examples in the "modulefiles" directory unless you know what you are 
+doing.  On a personal system or other HPC center, ensure that you know what 
+module commands are needed to get the python stack and other dependencies into
+your environment.
+
+
+### Installing to Per-Package Directories
+
+This is the default, and versions per-package subdirectories will be created underneath the prefix location.  This command will use the 
+*current state* of all the git clones.  So if you made a local branch after 
+getting the source with "desi_source", then that is what will be installed:
 
     $>  ../desi_setup \
         -p <prefix> \
@@ -130,6 +143,8 @@ Otherwise, you can now do:
 
 Where "prefix" is obviously what you specified with the "-p" option to 
 desi_setup.  All DESI software is now ready to use.
+
+### Installing to a Single Directory
 
 ### Install a Single Package
 

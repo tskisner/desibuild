@@ -6,7 +6,8 @@ show_help () {
     echo "Usage:  $0" >&2
     echo "    -p <prefix>" >&2
     echo "    -v <version file>" >&2
-    echo "    -e <module init>" >&2
+    echo "    [-c (use common install prefix)]"
+    echo "    [-e <module init>]" >&2
     echo "    [-s <directory of single package to install>]" >&2
     echo "" >&2
     echo "    Install current git clone states into prefix.  Only the" >&2
@@ -14,6 +15,9 @@ show_help () {
     echo "    This script should be run from the directory containing" >&2
     echo "    your git clones.  The module init file should contain" >&2
     echo "    module file commands to load external dependencies." >&2
+    echo "" >&2
+    echo "    If the -c option is given, install all packages to a" >&2
+    echo "    common directory (the prefix)." >&2
     echo "" >&2
     echo "    Alternatively, specify the directory containing a single" >&2
     echo "    package to install, as well as the prefix for the" >&2
@@ -294,17 +298,20 @@ install_packages () {
 
 
 prefix=""
+common="no"
 versionfile=""
 moduleinit=""
 single=""
 
-while getopts ":p:v:e:s:" opt; do
+while getopts ":p:v:ce:s:" opt; do
     case $opt in
         p)
             prefix=$OPTARG
             ;;
         v)
             versionfile=$OPTARG
+            ;;
+        c)  common="yes"
             ;;
         e)
             moduleinit=$OPTARG
