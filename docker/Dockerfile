@@ -12,7 +12,19 @@ RUN apt-get update \
     && apt-get install -y curl procps build-essential gfortran git \
     && rm -fr /var/lib/apt/lists/*
 
-# Add conda location to global bash environment.  We
+# Make all the directories we are going to need.  This
+# includes the conda install prefix and the DESI volume
+# mount points.
+
+RUN mkdir -p /usr/local/conda/bin \
+    && mkdir -p /usr/local/conda/lib \
+    && mkdir -p /usr/local/lib/python3.5/site-packages \
+    && mkdir -p /desi/spectro_data \
+    && mkdir -p /desi/spectro_redux \
+    && mkdir -p /desi/root \
+    && mkdir -p /desi/model
+
+# Set all environment variables we need. Note that we
 # add the conda library and include directories to our
 # environment as well, since we will be installing
 # compatible MKL headers and using the conda MKL install
@@ -20,43 +32,24 @@ RUN apt-get update \
 # or other TCL based scripts, it should be OK to have the
 # conda TCL/TK installation in our LD_LIBRARY_PATH.
 
-RUN mkdir -p /usr/local/conda/bin \
-    && mkdir -p /usr/local/conda/lib \
-    && mkdir -p /usr/local/lib/python3.5/site-packages \
-    && echo "" >> /etc/profile.d/desi.sh \
-    && echo "export PATH=/usr/local/conda/bin:\${PATH}" >> /etc/profile.d/desi.sh \
-    && echo "export CPATH=/usr/local/conda/include:\${CPATH}" >> /etc/profile.d/desi.sh \
-    && echo "export LIBRARY_PATH=/usr/local/conda/lib:\${LIBRARY_PATH}" >> /etc/profile.d/desi.sh \
-    && echo "export LD_LIBRARY_PATH=/usr/local/conda/lib:\${LD_LIBRARY_PATH}" >> /etc/profile.d/desi.sh \
-    && echo "" >> /etc/profile.d/desi.sh \
-    && echo "export PATH=/usr/local/bin:\${PATH}" >> /etc/profile.d/desi.sh \
-    && echo "export CPATH=/usr/local/include:\${CPATH}" >> /etc/profile.d/desi.sh \
-    && echo "export LIBRARY_PATH=/usr/local/lib:\${LIBRARY_PATH}" >> /etc/profile.d/desi.sh \
-    && echo "export LD_LIBRARY_PATH=/usr/local/lib:\${LD_LIBRARY_PATH}" >> /etc/profile.d/desi.sh \
-    && echo "export PYTHONPATH=/usr/local/lib/python3.5/site-packages:\${PYTHONPATH}" >> /etc/profile.d/desi.sh \
-    && echo "" >> /etc/profile.d/desi.sh \
-    && echo "if [ -e /usr/local/setup.sh ]; then" >> /etc/profile.d/desi.sh \
-    && echo "  source /usr/local/setup.sh" >> /etc/profile.d/desi.sh \
-    && echo "fi" >> /etc/profile.d/desi.sh \
-    && echo "" >> /etc/profile.d/desi.sh
+# At run time, the user must specify the mount points for 
+# /desi/spectro_data, /desi/spectro_redux, /desi/root,
+# and /desi/model.  The user must also set the environment 
+# variable for SPECPROD.  Currently DESI_BASIS_TEMPLATES 
+# is hard-coded to a subdirectory of DESI_ROOT, but we 
+# should change that.
 
-# Add DESI volume mount points.  At run time, the user must specify the
-# mount points for /desi/spectro_data, /desi/spectro_redux, /desi/root,
-# and /desi/model.  The user must also set environment variable for 
-# SPECPROD.  Currently DESI_BASIS_TEMPLATES is hard-coded to a subdirectory
-# of DESI_ROOT, but we should change that.
+ENV PATH /usr/local/bin:/usr/local/conda/bin:/usr/bin:/bin:/usr/sbin:/sbin
+ENV CPATH /usr/local/include:/usr/local/conda/include:/usr/include
+ENV LIBRARY_PATH /usr/local/lib:/usr/local/conda/lib:/usr/lib
+ENV LD_LIBRARY_PATH /usr/local/lib:/usr/local/conda/lib:/usr/lib
+ENV PYTHONPATH /usr/local/lib/python3.5/site-packages
 
-RUN mkdir -p /desi/spectro_data \
-    && mkdir -p /desi/spectro_redux \
-    && mkdir -p /desi/root \
-    && mkdir -p /desi/model \
-    && echo "" >> /etc/profile.d/desi.sh \
-    && echo "export DESI_SPECTRO_DATA=/desi/spectro_data" >> /etc/profile.d/desi.sh \
-    && echo "export DESI_SPECTRO_REDUX=/desi/spectro_redux" >> /etc/profile.d/desi.sh \
-    && echo "export DESIMODEL=/desi/model" >> /etc/profile.d/desi.sh \
-    && echo "export DESI_ROOT=/desi/root" >> /etc/profile.d/desi.sh \
-    && echo "export DESI_BASIS_TEMPLATES=${DESI_ROOT}/spectro/templates/basis_templates/v2.2" >> /etc/profile.d/desi.sh \
-    && echo "" >> /etc/profile.d/desi.sh
+ENV DESI_ROOT /desi/root
+ENV DESIMODEL /desi/model
+ENV DESI_SPECTRO_DATA /desi/spectro_data
+ENV DESI_SPECTRO_REDUX /desi/spectro_redux
+ENV DESI_BASIS_TEMPLATES "${DESI_ROOT}/spectro/templates/basis_templates/v2.2"
 
 # Create working directory for builds
 
@@ -65,8 +58,7 @@ WORKDIR /usr/src/desi
 
 # Install conda root environment
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+RUN curl -SL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     -o miniconda.sh \
     && /bin/bash miniconda.sh -b -f -p /usr/local/conda \
     && rm miniconda.sh \
@@ -74,8 +66,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install conda packages.
 
-RUN source /etc/profile.d/desi.sh \
-    && conda install --yes \
+RUN conda install --yes \
     requests \
     numpy \
     scipy \
@@ -89,8 +80,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install pip packages.
 
-RUN source /etc/profile.d/desi.sh \
-    && pip install --no-binary :all: \
+RUN pip install --no-binary :all: \
     fitsio \
     speclite \
     iniparser \
@@ -104,8 +94,7 @@ ADD mkl_11.3.3_include.tar.gz /usr/local/conda/include/
 # Cray MPICH which is prepended to LD_LIBRARY_PATH as part
 # of shifter.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
+RUN curl -SL http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
     -o mpich-3.2.tar.gz \
     && tar -xzf mpich-3.2.tar.gz \
     && cd mpich-3.2 \
@@ -116,8 +105,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install mpi4py.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL https://pypi.python.org/packages/ee/b8/f443e1de0b6495479fc73c5863b7b5272a4ece5122e3589db6cd3bb57eeb/mpi4py-2.0.0.tar.gz#md5=4f7d8126d7367c239fd67615680990e3 \
+RUN curl -SL https://pypi.python.org/packages/ee/b8/f443e1de0b6495479fc73c5863b7b5272a4ece5122e3589db6cd3bb57eeb/mpi4py-2.0.0.tar.gz#md5=4f7d8126d7367c239fd67615680990e3 \
     -o mpi4py-2.0.0.tar.gz \
     && tar xzf mpi4py-2.0.0.tar.gz \
     && cd mpi4py-2.0.0 \
@@ -127,8 +115,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install CFITSIO.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3410.tar.gz \
+RUN curl -SL http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3410.tar.gz \
     -o cfitsio3410.tar.gz \
     && tar xzf cfitsio3410.tar.gz \
     && cd cfitsio \
@@ -139,8 +126,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install FFTW.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL http://www.fftw.org/fftw-3.3.5.tar.gz \
+RUN curl -SL http://www.fftw.org/fftw-3.3.5.tar.gz \
     -o fftw-3.3.5.tar.gz \
     && tar xzf fftw-3.3.5.tar.gz \
     && cd fftw-3.3.5 \
@@ -151,8 +137,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install BOOST.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL https://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.tar.bz2/download \
+RUN curl -SL https://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.tar.bz2/download \
     -o boost_1_62_0.tar.bz2 \
     && tar xjf boost_1_62_0.tar.bz2 \
     && cd boost_1_62_0 \
@@ -172,8 +157,7 @@ RUN source /etc/profile.d/desi.sh \
 
 # Install HARP.
 
-RUN source /etc/profile.d/desi.sh \
-    && curl -SL https://github.com/tskisner/HARP/releases/download/v1.0.1/harp-1.0.1.tar.gz \
+RUN curl -SL https://github.com/tskisner/HARP/releases/download/v1.0.1/harp-1.0.1.tar.gz \
     -o harp-1.0.1.tar.gz \
     && tar xzf harp-1.0.1.tar.gz \
     && cd harp-1.0.1 \
@@ -192,15 +176,13 @@ RUN source /etc/profile.d/desi.sh \
 
 COPY desi_versions.txt /usr/local/
 
-RUN source /etc/profile.d/desi.sh \
-    && git clone https://github.com/tskisner/desibuild.git \
+RUN git clone https://github.com/tskisner/desibuild.git \
     && ./desibuild/desi_source /usr/local/desi_versions.txt \
-    && ./desibuild/desi_setup -p /usr/local -v /usr/local/desi_versions.txt \
+    && ./desibuild/desi_setup -c -p /usr/local -v /usr/local/desi_versions.txt \
     && rm -rf desi*
 
-# Set the entrypoint so that all commands executed with "docker run"
-# will first start a bash login shell (so that /etc/profile is sourced).
+# Set the entrypoint and default command
 
-ENTRYPOINT ["/bin/bash", "-l", "-c"]
+ENTRYPOINT ["/bin/bash", "-c"]
 CMD ["/bin/bash"]
 
