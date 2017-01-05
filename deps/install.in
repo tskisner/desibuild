@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Install DESI dependencies from source.
+
+mkdir -p @CONDA_ROOT@/bin
+mkdir -p @CONDA_ROOT@/lib
+mkdir -p @PREFIX@/lib/python3.5/site-packages
+
+export PATH=@PREFIX@/bin:@CONDA_ROOT@/bin:${PATH}
+export CPATH=@PREFIX@/include:${CPATH}
+export LIBRARY_PATH=@PREFIX@/lib:${LIBRARY_PATH}
+export LD_LIBRARY_PATH=@PREFIX@/lib:${LD_LIBRARY_PATH}
+export PYTHONPATH=@PREFIX@/lib/python3.5/site-packages:${PYTHONPATH}
+
+export ACCEPT_INTEL_PYTHON_EULA=yes
+
+# Install conda root environment
+
+@conda_root@
+
+# Install conda packages.
+
+@conda_pkgs@
+
+# Install pip packages.
+
+@pip_pkgs@
+
+# Install mpi4py.
+
+@mpi4py@
+
+# Install CFITSIO.
+
+@cfitsio@
+
+# Install FFTW.
+
+@fftw@
+
+# Install BOOST.
+
+@boost@
+
+# Install HARP.
+
+@harp@
+

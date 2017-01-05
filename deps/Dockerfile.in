@@ -1,0 +1,117 @@
+FROM ubuntu:16.04
+
+MAINTAINER Theodore Kisner <tskisner@lbl.gov>
+
+# Use bash
+
+SHELL ["/bin/bash", "-c"]
+
+# Install system dependencies.
+
+RUN apt-get update \
+    && apt-get install -y curl procps build-essential gfortran git \
+    && rm -fr /var/lib/apt/lists/*
+
+# Make all the directories we are going to need.  This
+# includes the conda install prefix and the DESI volume
+# mount points.
+
+RUN mkdir -p /usr/local/conda/bin \
+    && mkdir -p /usr/local/conda/lib \
+    && mkdir -p /usr/local/lib/python3.5/site-packages \
+    && mkdir -p /desi/spectro_data \
+    && mkdir -p /desi/spectro_redux \
+    && mkdir -p /desi/root \
+    && mkdir -p /desi/model
+
+# Set all environment variables we need. Note that we
+# add the conda library and include directories to our
+# environment as well, since we will be installing
+# compatible MKL headers and using the conda MKL install
+# for compiled packages.  Since we are not using modules
+# or other TCL based scripts, it should be OK to have the
+# conda TCL/TK installation in our LD_LIBRARY_PATH.
+
+# At run time, the user must specify the mount points for 
+# /desi/spectro_data, /desi/spectro_redux, /desi/root,
+# and /desi/model.  The user must also set the environment 
+# variable for SPECPROD.  Currently DESI_BASIS_TEMPLATES 
+# is hard-coded to a subdirectory of DESI_ROOT, but we 
+# should change that.
+
+ENV PATH /usr/local/bin:/usr/local/conda/bin:/usr/bin:/bin:/usr/sbin:/sbin
+ENV CPATH /usr/local/include:/usr/local/conda/include:/usr/include
+ENV LIBRARY_PATH /usr/local/lib:/usr/local/conda/lib:/usr/lib
+ENV LD_LIBRARY_PATH /usr/local/lib:/usr/local/conda/lib:/usr/lib
+ENV PYTHONPATH /usr/local/lib/python3.5/site-packages
+
+ENV DESI_ROOT /desi/root
+ENV DESIMODEL /desi/model
+ENV DESI_SPECTRO_DATA /desi/spectro_data
+ENV DESI_SPECTRO_REDUX /desi/spectro_redux
+ENV DESI_BASIS_TEMPLATES "${DESI_ROOT}/spectro/templates/basis_templates/v2.2"
+
+ENV ACCEPT_INTEL_PYTHON_EULA yes
+
+# Create working directory for builds
+
+RUN mkdir /usr/src/desi
+WORKDIR /usr/src/desi
+
+# Install conda root environment
+
+@conda_root@
+
+# Install conda packages.
+
+@conda_pkgs@
+
+# Install pip packages.
+
+@pip_pkgs@
+
+# Copy MKL 11.3.3 headers into conda root
+
+ADD mkl_11.3.3_include.tar.gz /usr/local/conda/include/
+
+# Install MPICH 3.2 which is compatible with the external
+# Cray MPICH which is prepended to LD_LIBRARY_PATH as part
+# of shifter.
+
+@mpich@
+
+# Install mpi4py.
+
+@mpi4py@
+
+# Install CFITSIO.
+
+@cfitsio@
+
+# Install FFTW.
+
+@fftw@
+
+# Install BOOST.
+
+@boost@
+
+# Install HARP.
+
+@harp@
+
+# Install desibuild, to facilitate installation of DESI packages.  Then
+# install all desi packages based on the version file.
+
+COPY desi_versions.txt /usr/local/
+
+RUN git clone https://github.com/tskisner/desibuild.git \
+    && ./desibuild/desi_source /usr/local/desi_versions.txt \
+    && ./desibuild/desi_setup -c -p /usr/local -v /usr/local/desi_versions.txt \
+    && rm -rf desi*
+
+# Set the entrypoint and default command
+
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["/bin/bash"]
+

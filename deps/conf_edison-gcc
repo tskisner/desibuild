@@ -1,0 +1,31 @@
+
+PREFIX=/global/common/edison/contrib/desi/code/desiconda/20170105_extra
+CONDA_ROOT=/global/common/edison/contrib/desi/code/desiconda/20170105
+
+CC = gcc
+CXX = g++
+FC = gfortran
+
+MPICC = cc
+MPICXX = CC
+MPIFC = ftn
+
+CFLAGS = -O3 -fPIC -std=gnu99 -pthread
+CXXFLAGS = -O3 -fPIC -std=c++11 -pthread
+FCFLAGS = -O3 -fPIC -fexceptions -pthread
+
+OPENMP_CFLAGS = -fopenmp
+OPENMP_CXXFLAGS = -fopenmp
+LDFLAGS = -lpthread -fopenmp
+
+MPI_CPPFLAGS = /opt/cray/mpt/default/gni/mpich-gnu/5.1/include
+MPI_LDFLAGS = /opt/cray/mpt/default/gni/mpich-gnu/5.1/lib
+MPI_CXXLIB = mpichcxx
+MPI_LIB = mpich
+
+BLAS = -L/usr/common/software/intel/compilers_and_libraries_2017.0.064/linux/mkl/lib/intel64 -lmkl_rt -fopenmp -lpthread -lm -ldl
+
+LAPACK = 
+
+BOOSTCHAIN = gcc
+

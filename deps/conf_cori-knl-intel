@@ -1,0 +1,31 @@
+
+PREFIX=/global/common/cori/contrib/desi/code/desiconda/20170105_extra
+CONDA_ROOT=/global/common/cori/contrib/desi/code/desiconda/20170105
+
+CC = icc
+CXX = icpc
+FC = ifort
+
+MPICC = cc
+MPICXX = CC
+MPIFC = ftn
+
+CFLAGS = -O3 -g -fPIC -xMIC-AVX512 -std=gnu99 -pthread
+CXXFLAGS = -O3 -g -fPIC -xMIC-AVX512 -std=c++11 -pthread
+FCFLAGS = -O3 -g -fPIC -xMIC-AVX512 -fexceptions -pthread
+
+OPENMP_CFLAGS = -qopenmp
+OPENMP_CXXFLAGS = -qopenmp
+LDFLAGS = -lpthread -liomp5
+
+MPI_CPPFLAGS = /opt/cray/pe/default/gni/mpich-intel/16.0/include
+MPI_LDFLAGS = /opt/cray/pe/default/gni/mpich-intel/16.0/lib
+MPI_CXXLIB = mpichcxx
+MPI_LIB = mpich
+
+BLAS = -L/usr/common/software/intel/compilers_and_libraries_2017.0.064/linux/mkl/lib/intel64 -lmkl_rt -fopenmp -lpthread -lmemkind -ljemalloc -lm -ldl
+
+LAPACK = 
+
+BOOSTCHAIN = intel-linux
+
