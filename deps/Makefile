@@ -12,7 +12,7 @@ fftw \
 boost \
 harp
 
-nersc_rules = \
+normal_rules = \
 conda_root \
 conda_pkgs \
 pip_pkgs \
@@ -22,33 +22,37 @@ fftw \
 boost \
 harp
 
-confs := $(wildcard conf_*)
+confs_normal := $(wildcard conf/*)
 
-.PHONY : all clean docker nersc
+confs_docker := $(wildcard conf/docker-*)
 
-
-all : docker nersc
-
-
-docker : $(foreach cf,$(confs),$(shell root=`echo $(cf) | sed -e "s#conf_\(.*\)#\1#"`; echo Dockerfile_$${root}))
-
-nersc : $(foreach cf,$(confs),$(shell root=`echo $(cf) | sed -e "s#conf_\(.*\)#\1#"`; echo install_$${root}.sh))
+.PHONY : all clean docker normal
 
 
-Dockerfile_% : conf_% Dockerfile.template
-	@./apply_conf.sh $< Dockerfile.template $@
+all : docker normal
 
 
-install_%.sh : conf_% install.template
-	@./apply_conf.sh $< install.template $@
+
+docker : $(foreach cf,$(confs_docker),Dockerfile_$(subst conf/docker-,,$(cf)))
+
+normal : $(foreach cf,$(confs_normal),install_$(subst conf/,,$(cf)).sh)
+
+
+Dockerfile_% : conf/docker-% Dockerfile.template
+	@./tools/apply_conf.sh $< Dockerfile.template $@
+
+
+install_%.sh : conf/% install.template
+	@./tools/apply_conf.sh $< install.template $@; \
+	chmod +x $@
 
 
 Dockerfile.template : Dockerfile.in $(foreach rl,$(docker_rules),rules/$(rl).sh)
-	@./gen_template.sh $< $@ "$(docker_rules)" RUN
+	@./tools/gen_template.sh $< $@ "$(docker_rules)" RUN
 
 
-install.template : install.in $(foreach rl,$(nersc_rules),rules/$(rl).sh)
-	@./gen_template.sh $< $@ "$(nersc_rules)"
+install.template : install.in $(foreach rl,$(normal_rules),rules/$(rl).sh)
+	@./tools/gen_template.sh $< $@ "$(normal_rules)"
 
 
 clean :

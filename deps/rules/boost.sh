@@ -4,7 +4,7 @@ curl -SL https://sourceforge.net/projects/boost/files/boost/1.62.0/boost_1_62_0.
     && cd boost_1_62_0 \
     && echo "" > tools/build/user-config.jam \
     && echo 'using @BOOSTCHAIN@ : : @CXX@ : <cflags>"@CFLAGS@" <cxxflags>"@CXXFLAGS@" ;' >> tools/build/user-config.jam \
-    && echo 'using mpi : @MPICXX@ : <find-shared-library>@MPI_CXXLIB@ <find-shared-library>@MPI_LIB@ ;' >> tools/build/user-config.jam \
+    && echo 'using mpi : @MPICXX@ : <include>"@MPI_CPPFLAGS@" <find-shared-library>"@MPI_CXXLIB@" <find-shared-library>"@MPI_LIB@" ;' >> tools/build/user-config.jam \
     && BOOST_BUILD_USER_CONFIG=tools/build/user-config.jam ./bootstrap.sh \
     --with-toolset=@BOOSTCHAIN@ \
     --with-python=python3 \

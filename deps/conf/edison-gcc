@@ -2,6 +2,9 @@
 PREFIX=/global/common/edison/contrib/desi/code/desiconda/20170105_extra
 CONDA_ROOT=/global/common/edison/contrib/desi/code/desiconda/20170105
 
+MODULE_DIR=/global/common/edison/contrib/desi/modulefiles/desiconda
+MODULE_VERSION=20170105
+
 CC = gcc
 CXX = g++
 FC = gfortran

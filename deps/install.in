@@ -46,3 +46,32 @@ export ACCEPT_INTEL_PYTHON_EULA=yes
 
 @harp@
 
+# Install modulefile
+
+# if [ "x@MODULE_DIR@" != "x" ]; then
+#     modload="@CONFFILE@.modload"
+#     modin="modulefile.in"
+#     modout=""
+
+#     while IFS='' read -r line || [[ -n "${line}" ]]; do
+#         match="no"
+
+#             if [[ "${line}" =~ @${rule}@ ]]; then
+#                 match="yes"
+#                 echo -n "${precommand} " >> "${outfile}"
+#                 cat "${rulefile}" >> "${outfile}"
+#                 break
+#             fi
+#         done
+#         if [ "${match}" = "no" ]; then
+#             echo "${line}" >> "${outfile}"
+#         fi
+#     done < "${modulefile.in}"
+
+
+#     echo '
+# @@
+# ' >> "@MODULE_DIR@"
+
+
+

@@ -1,6 +1,6 @@
 
-PREFIX=/usr/local
-CONDA_ROOT=/usr/local/conda
+PREFIX = /usr/local
+CONDA_ROOT = /usr/local/conda
 
 CC = gcc
 CXX = g++

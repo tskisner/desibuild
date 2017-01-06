@@ -70,9 +70,9 @@ WORKDIR /usr/src/desi
 
 @pip_pkgs@
 
-# Copy MKL 11.3.3 headers into conda root
+# Copy MKL headers into conda root
 
-ADD mkl_11.3.3_include.tar.gz /usr/local/conda/include/
+ADD dockerdata/mkl_11.3.3_include.tar.gz /usr/local/conda/include/
 
 # Install MPICH 3.2 which is compatible with the external
 # Cray MPICH which is prepended to LD_LIBRARY_PATH as part
@@ -103,7 +103,7 @@ ADD mkl_11.3.3_include.tar.gz /usr/local/conda/include/
 # Install desibuild, to facilitate installation of DESI packages.  Then
 # install all desi packages based on the version file.
 
-COPY desi_versions.txt /usr/local/
+COPY dockerdata/desi_versions.txt /usr/local/
 
 RUN git clone https://github.com/tskisner/desibuild.git \
     && ./desibuild/desi_source /usr/local/desi_versions.txt \

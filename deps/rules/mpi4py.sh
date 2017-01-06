@@ -2,6 +2,7 @@ curl -SL https://pypi.python.org/packages/ee/b8/f443e1de0b6495479fc73c5863b7b527
     -o mpi4py-2.0.0.tar.gz \
     && tar xzf mpi4py-2.0.0.tar.gz \
     && cd mpi4py-2.0.0 \
-    && python setup.py install mpicc="@MPICC@" mpicxx="@MPICXX@" --prefix=@PREFIX@ \
+    && python setup.py build --mpicc="@MPICC@" --mpicxx="@MPICXX@" \
+    && python setup.py install --prefix=@PREFIX@ \
     && cd .. \
     && rm -rf mpi4py*
