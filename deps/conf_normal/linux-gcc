@@ -2,6 +2,9 @@
 PREFIX = /usr/local
 CONDA_ROOT = /usr/local/conda
 
+CHGRP = 
+CHMOD = a+rX
+
 CC = gcc
 CXX = g++
 FC = gfortran

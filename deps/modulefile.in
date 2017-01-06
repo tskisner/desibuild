@@ -16,7 +16,7 @@ proc ModulesHelp { } {
   puts stderr ""
 }
 
-conflict @MODULE_DIR@
+conflict desiconda
 
 @modload@
 
@@ -28,3 +28,9 @@ prepend-path PATH @CONDA_ROOT@/bin
 setenv PYTHONPATH @CONDA_ROOT@/lib/python3.5/site-packages
 setenv DESICONDA @CONDA_ROOT@
 
+# This is the location of the extra compiled software
+prepend-path PATH @PREFIX@/bin
+prepend-path CPATH @PREFIX@/include
+prepend-path LD_LIBRARY_PATH @PREFIX@/lib
+prepend-path LIBRARY_PATH @PREFIX@/lib
+prepend-path PYTHONPATH @PREFIX@/lib/python3.5/site-packages

@@ -1,8 +1,12 @@
 
-PREFIX = /home/kisner/software/desiconda_extra
-CONDA_ROOT = /home/kisner/software/desiconda
-MODULE_DIR = /global/common/cori/contrib/desi/modulefiles/desiconda
-MODULE_VERSION = 20170105
+PREFIX = /home/kisner/software/desiconda/20170106_extra
+CONDA_ROOT = /home/kisner/software/desiconda/20170106
+
+MODULE_DIR = /home/kisner/software/modulefiles
+MODULE_VERSION = 20170106
+
+CHGRP = 
+CHMOD = a+rX
 
 CC = gcc
 CXX = g++

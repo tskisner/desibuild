@@ -22,9 +22,9 @@ fftw \
 boost \
 harp
 
-confs_normal := $(wildcard conf/*)
+confs_normal := $(wildcard conf_normal/*)
 
-confs_docker := $(wildcard conf/docker-*)
+confs_docker := $(wildcard conf_docker/*)
 
 .PHONY : all clean docker normal
 
@@ -33,18 +33,21 @@ all : docker normal
 
 
 
-docker : $(foreach cf,$(confs_docker),Dockerfile_$(subst conf/docker-,,$(cf)))
+docker : $(foreach cf,$(confs_docker),Dockerfile_$(subst conf_docker/,,$(cf)))
 
-normal : $(foreach cf,$(confs_normal),install_$(subst conf/,,$(cf)).sh)
+normal : $(foreach cf,$(confs_normal),install_$(subst conf_normal/,,$(cf)).sh)
 
 
-Dockerfile_% : conf/docker-% Dockerfile.template
+Dockerfile_% : conf_docker/% Dockerfile.template
 	@./tools/apply_conf.sh $< Dockerfile.template $@
 
 
-install_%.sh : conf/% install.template
+install_%.sh : conf_normal/% install.template
 	@./tools/apply_conf.sh $< install.template $@; \
-	chmod +x $@
+	chmod +x $@; \
+	./tools/gen_modulefile.sh modulefile.in $@.modtemplate conf_normal_init/$*; \
+	./tools/apply_conf.sh $< $@.modtemplate $@.module; \
+	./tools/apply_conf.sh $< version.in $@.modversion
 
 
 Dockerfile.template : Dockerfile.in $(foreach rl,$(docker_rules),rules/$(rl).sh)
