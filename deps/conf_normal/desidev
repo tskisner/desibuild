@@ -1,8 +1,8 @@
 
-PREFIX = /home/kisner/software/desiconda/20170106_extra
-CONDA_ROOT = /home/kisner/software/desiconda/20170106
+PREFIX = /opt/desi/desiconda/20170106_extra
+CONDA_ROOT = /opt/desi/desiconda/20170106
 
-MODULE_DIR = /home/kisner/software/modulefiles
+MODULE_DIR = /opt/desi/modulefiles
 MODULE_VERSION = 20170106
 
 CHGRP = 
