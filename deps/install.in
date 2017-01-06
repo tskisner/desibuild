@@ -70,6 +70,7 @@ fi
 if [ "x@MODULE_DIR@" != "x" ]; then
     mkdir -p "@MODULE_DIR@/desiconda"
     cp "$0.module" "@MODULE_DIR@/desiconda/@MODULE_VERSION@"
+    cp "$0.modversion" "@MODULE_DIR@/desiconda/.version_@MODULE_VERSION@"
 
     if [ "x@CHGRP@" != "x" ]; then
         chgrp -R @CHGRP@ "@MODULE_DIR@/desiconda"
