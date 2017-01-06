@@ -24,6 +24,8 @@ OPENMP_CFLAGS = -qopenmp
 OPENMP_CXXFLAGS = -qopenmp
 LDFLAGS = -lpthread -liomp5
 
+CROSS = --build x86_64-pc-linux-gnu --host x86_64-unknown-linux-gnu
+
 MPI_CPPFLAGS = /opt/cray/pe/default/gni/mpich-intel/16.0/include
 MPI_LDFLAGS = /opt/cray/pe/default/gni/mpich-intel/16.0/lib
 MPI_CXXLIB = mpichcxx

@@ -1,6 +1,6 @@
 
-PREFIX = /opt/desi/desiconda/20170106_extra
-CONDA_ROOT = /opt/desi/desiconda/20170106
+PREFIX = /opt/desi/code/desiconda/20170106_extra
+CONDA_ROOT = /opt/desi/code/desiconda/20170106
 
 MODULE_DIR = /opt/desi/modulefiles
 MODULE_VERSION = 20170106
@@ -23,6 +23,8 @@ FCFLAGS = -O3 -fPIC -fexceptions -pthread
 OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
+
+CROSS = 
 
 MPI_CPPFLAGS = /usr/include/mpi
 MPI_LDFLAGS = /usr/lib

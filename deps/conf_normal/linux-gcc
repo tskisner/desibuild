@@ -21,6 +21,8 @@ OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
 
+CROSS = 
+
 MPI_CPPFLAGS = /usr/local/include
 MPI_LDFLAGS = /usr/local/lib
 MPI_CXXLIB = mpichcxx
