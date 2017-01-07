@@ -1,6 +1,4 @@
-conda config --add channels intel \
-    && conda install --yes intelpython3_core \
-    && conda install --yes \
+conda install --yes \
     requests \
     numpy \
     scipy \

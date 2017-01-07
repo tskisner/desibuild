@@ -2,7 +2,7 @@
 PREFIX = /opt/desi/code/desiconda/20170106_extra
 CONDA_ROOT = /opt/desi/code/desiconda/20170106
 
-MODULE_DIR = /opt/desi/modulefiles
+MODULE_DIR = /opt/desi/code/modulefiles
 MODULE_VERSION = 20170106
 
 CHGRP = 
@@ -23,6 +23,8 @@ FCFLAGS = -O3 -fPIC -fexceptions -pthread
 OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
+
+INTEL_CONDA = no
 
 CROSS = 
 

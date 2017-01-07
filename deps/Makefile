@@ -3,6 +3,7 @@
 
 docker_rules = \
 conda_root \
+conda_intel \
 conda_pkgs \
 pip_pkgs \
 mpich \
@@ -14,6 +15,7 @@ harp
 
 normal_rules = \
 conda_root \
+conda_intel \
 conda_pkgs \
 pip_pkgs \
 mpi4py \

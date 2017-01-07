@@ -21,6 +21,8 @@ OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
 
+INTEL_CONDA = no
+
 CROSS = 
 
 MPI_CPPFLAGS = /usr/local/include

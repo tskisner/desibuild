@@ -24,6 +24,8 @@ OPENMP_CFLAGS = -qopenmp
 OPENMP_CXXFLAGS = -qopenmp
 LDFLAGS = -lpthread -liomp5
 
+INTEL_CONDA = yes
+
 CROSS = --build x86_64-pc-linux-gnu --host x86_64-unknown-linux-gnu
 
 MPI_CPPFLAGS = /opt/cray/pe/default/gni/mpich-intel/16.0/include

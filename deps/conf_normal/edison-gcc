@@ -24,6 +24,8 @@ OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
 
+INTEL_CONDA = yes
+
 CROSS = 
 
 MPI_CPPFLAGS = /opt/cray/mpt/default/gni/mpich-gnu/5.1/include
