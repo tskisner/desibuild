@@ -9,7 +9,7 @@ if [ module-info mode load ] {
       module swap PrgEnv-intel PrgEnv-gnu
     }
   }
-  module load intel
+  module load intel/17.0.0.098
   module load git
   setenv CRAYPE_LINK_TYPE dynamic
 }

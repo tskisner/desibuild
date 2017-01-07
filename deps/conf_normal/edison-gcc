@@ -33,7 +33,7 @@ MPI_LDFLAGS = /opt/cray/mpt/default/gni/mpich-gnu/5.1/lib
 MPI_CXXLIB = mpichcxx
 MPI_LIB = mpich
 
-BLAS = -L/usr/common/software/intel/compilers_and_libraries_2017.0.064/linux/mkl/lib/intel64 -lmkl_rt -fopenmp -lpthread -lm -ldl
+BLAS = -L/global/common/cori/software/intel/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64 -lmkl_rt -fopenmp -lpthread -lm -ldl
 
 LAPACK = 
 
