@@ -62,6 +62,11 @@ WORKDIR /usr/src/desi
 
 @conda_root@
 
+#
+# Re-enable intel conda here, once we have
+# an intel build machine setup.
+#
+
 # Install conda packages.
 
 @conda_pkgs@

@@ -18,6 +18,10 @@ OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
 
+INTEL_CONDA = yes
+
+CROSS =
+
 MPI_CPPFLAGS = /usr/local/include
 MPI_LDFLAGS = /usr/local/lib
 MPI_CXXLIB = mpichcxx
