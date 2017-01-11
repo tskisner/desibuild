@@ -68,16 +68,6 @@ ADD dockerdata/mkl_11.3.3_include.tar.gz /usr/include/
 
 @harp@
 
-# Install desibuild, to facilitate installation of DESI packages.  Then
-# install all desi packages based on the version file.
-
-COPY dockerdata/desi_versions.txt /usr/local/
-
-RUN git clone https://github.com/tskisner/desibuild.git \
-    && ./desibuild/desi_source /usr/local/desi_versions.txt \
-    && ./desibuild/desi_setup -c -p /usr/local -v /usr/local/desi_versions.txt \
-    && rm -rf desi*
-
 # Set the entrypoint and default command
 
 ENTRYPOINT ["/bin/bash", "-c"]

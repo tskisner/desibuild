@@ -1,4 +1,4 @@
-conda install --yes \
+conda install --copy --yes \
     nose \
     requests \
     numpy \

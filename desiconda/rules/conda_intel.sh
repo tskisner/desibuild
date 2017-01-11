@@ -1,3 +1,3 @@
 conda config --add channels intel \
-    && conda install --yes intelpython3_core \
+    && conda install --copy --yes intelpython3_core \
     && rm -rf @CONDA_ROOT@/pkgs/*
