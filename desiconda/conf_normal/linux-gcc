@@ -2,6 +2,9 @@
 PREFIX = /usr/local
 CONDA_ROOT = /usr/local/conda
 
+CHGRP = 
+CHMOD = a+rX
+
 CC = gcc
 CXX = g++
 FC = gfortran
@@ -18,9 +21,10 @@ OPENMP_CFLAGS = -fopenmp
 OPENMP_CXXFLAGS = -fopenmp
 LDFLAGS = -lpthread -fopenmp
 
-INTEL_CONDA = yes
+INTEL_CONDA = no
+MINICONDA = https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
-CROSS =
+CROSS = 
 
 MPI_CPPFLAGS = /usr/local/include
 MPI_LDFLAGS = /usr/local/lib
@@ -32,4 +36,3 @@ BLAS = -L/usr/local/conda/lib -lmkl_rt -fopenmp -lpthread -lm -ldl
 LAPACK = 
 
 BOOSTCHAIN = gcc
-

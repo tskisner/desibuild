@@ -1,4 +1,4 @@
-curl -SL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+curl -SL @MINICONDA@ \
     -o miniconda.sh \
     && /bin/bash miniconda.sh -b -f -p @CONDA_ROOT@ \
     && rm miniconda.sh \

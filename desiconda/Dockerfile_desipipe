@@ -1,0 +1,48 @@
+FROM tskisner/desiconda:latest
+
+MAINTAINER Theodore Kisner <tskisner@lbl.gov>
+
+# Use bash
+
+SHELL ["/bin/bash", "-c"]
+
+# Make all the DESI data directories we are going to need
+# for volume mount points.
+
+RUN mkdir -p /desi/spectro_data \
+    && mkdir -p /desi/spectro_redux \
+    && mkdir -p /desi/root \
+    && mkdir -p /desi/model
+
+# At run time, the user must specify the mount points for 
+# /desi/spectro_data, /desi/spectro_redux, /desi/root,
+# and /desi/model.  The user must also set the environment 
+# variable for SPECPROD.  Currently DESI_BASIS_TEMPLATES 
+# is hard-coded to a subdirectory of DESI_ROOT, but we 
+# should change that.
+
+ENV DESI_ROOT /desi/root
+ENV DESIMODEL /desi/model
+ENV DESI_SPECTRO_DATA /desi/spectro_data
+ENV DESI_SPECTRO_REDUX /desi/spectro_redux
+ENV DESI_BASIS_TEMPLATES "${DESI_ROOT}/spectro/templates/basis_templates/v2.2"
+
+# Create working directory for builds
+
+RUN mkdir -p /usr/src/desi
+WORKDIR /usr/src/desi
+
+# Install all DESI packages
+
+COPY dockerdata/desi_versions.txt /usr/
+
+RUN git clone https://github.com/tskisner/desibuild.git \
+    && ./desibuild/desi_source /usr/desi_versions.txt \
+    && ./desibuild/desi_setup -c -p /usr -v /usr/desi_versions.txt \
+    && rm -rf desi*
+
+# Set the entrypoint and default command
+
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["/bin/bash"]
+

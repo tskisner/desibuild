@@ -35,12 +35,12 @@ all : docker normal
 
 
 
-docker : $(foreach cf,$(confs_docker),Dockerfile_$(subst conf_docker/,,$(cf)))
+docker : $(foreach cf,$(confs_docker),Dockerfile_desiconda_$(subst conf_docker/,,$(cf)))
 
 normal : $(foreach cf,$(confs_normal),install_$(subst conf_normal/,,$(cf)).sh)
 
 
-Dockerfile_% : conf_docker/% Dockerfile.template
+Dockerfile_desiconda_% : conf_docker/% Dockerfile.template
 	@./tools/apply_conf.sh $< Dockerfile.template $@
 
 
@@ -61,5 +61,5 @@ install.template : install.in $(foreach rl,$(normal_rules),rules/$(rl).sh)
 
 
 clean :
-	@rm -f Dockerfile_* Dockerfile.template install_* install.template
+	@rm -f Dockerfile_desiconda_* Dockerfile.template install_* install.template
 

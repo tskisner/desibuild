@@ -1,0 +1,85 @@
+FROM ubuntu:16.04
+
+MAINTAINER Theodore Kisner <tskisner@lbl.gov>
+
+# Use bash
+
+SHELL ["/bin/bash", "-c"]
+
+# Install system dependencies.
+
+RUN apt-get update \
+    && apt-get install -y curl procps build-essential gfortran git \
+    && rm -fr /var/lib/apt/lists/*
+
+# We install everything directly into /usr so that we do
+# not need to modify the default library and executable
+# search paths.  Shifter will manipulate LD_LIBRARY_PATH,
+# so it is important not to use that variable.
+
+# Create working directory for builds
+
+RUN mkdir /usr/src/desi
+WORKDIR /usr/src/desi
+
+# Install conda root environment
+
+@conda_root@
+
+ENV ACCEPT_INTEL_PYTHON_EULA yes
+
+@conda_intel@
+
+# Install conda packages.
+
+@conda_pkgs@
+
+# Install pip packages.
+
+@pip_pkgs@
+
+# Copy MKL headers into conda root
+
+ADD dockerdata/mkl_11.3.3_include.tar.gz /usr/include/
+
+# Install MPICH 3.2 which is compatible with the external
+# Cray MPICH which is prepended to LD_LIBRARY_PATH as part
+# of shifter.
+
+@mpich@
+
+# Install mpi4py.
+
+@mpi4py@
+
+# Install CFITSIO.
+
+@cfitsio@
+
+# Install FFTW.
+
+@fftw@
+
+# Install BOOST.
+
+@boost@
+
+# Install HARP.
+
+@harp@
+
+# Install desibuild, to facilitate installation of DESI packages.  Then
+# install all desi packages based on the version file.
+
+COPY dockerdata/desi_versions.txt /usr/local/
+
+RUN git clone https://github.com/tskisner/desibuild.git \
+    && ./desibuild/desi_source /usr/local/desi_versions.txt \
+    && ./desibuild/desi_setup -c -p /usr/local -v /usr/local/desi_versions.txt \
+    && rm -rf desi*
+
+# Set the entrypoint and default command
+
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["/bin/bash"]
+
