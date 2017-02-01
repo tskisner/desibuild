@@ -1,4 +1,4 @@
-FROM tskisner/desiconda:20170111
+FROM tskisner/desiconda:latest
 
 MAINTAINER Theodore Kisner <tskisner@lbl.gov>
 
