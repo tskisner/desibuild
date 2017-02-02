@@ -1,9 +1,15 @@
 
-PREFIX = /global/common/edison/contrib/desi/code/desiconda/20170106_extra
-CONDA_ROOT = /global/common/edison/contrib/desi/code/desiconda/20170106
+PREFIX = /scratch2/scratchdirs/kisner/software/desi/desiconda/20170201_extra
+CONDA_ROOT = /scratch2/scratchdirs/kisner/software/desi/desiconda/20170201
 
-MODULE_DIR = /global/common/edison/contrib/desi/modulefiles
-MODULE_VERSION = 20170106
+#PREFIX = /global/common/edison/contrib/desi/code/desiconda/20170106_extra
+#CONDA_ROOT = /global/common/edison/contrib/desi/code/desiconda/20170106
+
+#MODULE_DIR = /global/common/edison/contrib/desi/modulefiles
+#MODULE_VERSION = 20170106
+
+MODULE_DIR = /scratch2/scratchdirs/kisner/software/desi/modulefiles
+MODULE_VERSION = 20170201
 
 CHGRP = desi
 CHMOD = a+rX,g-w,o-w
