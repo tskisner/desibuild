@@ -19,6 +19,6 @@ Now use the normal docker commands to build the image::
 
     $> docker build . -f Dockerfile_desipipe
 
-After this is done you can do the use tagging of the image and push to 
+After this is done you can do the usual tagging of the image and push to 
 dockerhub.
 
