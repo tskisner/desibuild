@@ -199,3 +199,9 @@ your freshly installed software the default just do:
 and now running "module avail" should reflect the change in the default
 module versions.
 
+
+### Docker Images
+
+If you want to build a docker image containing the DESI tools, see the 
+README in the "docker" sub-directory.
+
