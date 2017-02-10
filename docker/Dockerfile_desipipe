@@ -27,6 +27,14 @@ ENV DESI_SPECTRO_DATA /desi/spectro_data
 ENV DESI_SPECTRO_REDUX /desi/spectro_redux
 ENV DESI_BASIS_TEMPLATES "${DESI_ROOT}/spectro/templates/basis_templates/v2.2"
 
+# Per-package environment variables that need to be set.
+# These variables are actually in the /usr/setup.sh file that
+# desibuild installs, but we can't source that file easily
+# with shifter.
+
+ENV HARP_PLUGIN_PATH /usr/lib
+ENV REDMONSTER_TEMPLATES_DIR /usr/templates
+
 # Create working directory for builds
 
 RUN mkdir -p /usr/src/desi
