@@ -42,7 +42,7 @@ WORKDIR /usr/src/desi
 
 # Install all DESI packages
 
-COPY dockerdata/desi_versions.txt /usr/
+COPY desi_versions.txt /usr/
 
 RUN git clone https://github.com/tskisner/desibuild.git \
     && ./desibuild/desi_source /usr/desi_versions.txt \
