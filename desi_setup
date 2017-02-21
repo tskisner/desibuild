@@ -541,7 +541,7 @@ common="no"
 versionfile=""
 moduleinit=""
 single=""
-desiroot="/project/projectdirs/desi"
+desiroot="/global/project/projectdirs/desi"
 
 while getopts ":p:v:ce:s:r:" opt; do
     case $opt in
