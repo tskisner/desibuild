@@ -6,7 +6,8 @@ show_help () {
     echo "Usage:  $0" >&2
     echo "    -p <prefix>" >&2
     echo "    -v <version file>" >&2
-    echo "    [-c (use common install prefix)]"
+    echo "    [-r <value to set as DESI_ROOT>]" >&2
+    echo "    [-c (use common install prefix)]" >&2
     echo "    [-e <module init>]" >&2
     echo "    [-s <directory of single package to install>]" >&2
     echo "" >&2
@@ -231,6 +232,43 @@ install_package () {
 
         python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
 
+    elif [ "${pkg}" = "desimodel" ]; then
+
+        # This is a standard DESI python package, but we also must set
+        # the DESIMODEL environment variable and download the data files
+        # with svn.
+
+        mkdir -p "${pkgprefix}/bin" >> "${logfile}" 2>&1
+        mkdir -p "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+        export PATH="${pkgprefix}/bin:${PATH}"
+        echo "export PATH=\"${pkgprefix}/bin:\${PATH}\"" >> "${setup}"
+        
+        export PYTHONPATH="${pkgprefix}/lib/python${pysite}/site-packages:${PYTHONPATH}"
+        echo "export PYTHONPATH=\"${pkgprefix}/lib/python${pysite}/site-packages:\${PYTHONPATH}\"" >> "${setup}"
+
+        echo "prepend-path PATH \"${pkgprefix}/bin\"" >> "${outmod}"
+        echo "prepend-path PYTHONPATH \"${pkgprefix}/lib/python${pysite}/site-packages\"" >> "${outmod}"
+
+        python setup.py install --prefix=${pkgprefix} >> "${logfile}" 2>&1
+
+        python -m compileall -f "${pkgprefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+        datascript=$(printf "%s/etc/%s" "$(pwd)" "$(basename ./etc/desimodel_data.sh)")
+        pushd "${pkgprefix}" > /dev/null
+        mastercheck=$(echo ${pkgver} | sed -e "s#master.*#master#")
+        if [ "x${mastercheck}" = "xmaster" ]; then
+            export DESIMODEL_VERSION="trunk"
+        else
+            export DESIMODEL_VERSION="${pkgver}"
+        fi
+        eval "/bin/bash ${datascript}"
+        popd > /dev/null
+
+        export DESIMODEL="${pkgprefix}"
+        echo "export DESIMODEL=\"${pkgprefix}\"" >> "${setup}"
+        echo "setenv DESIMODEL \"${pkgprefix}\"" >> "${outmod}"
+
     else
 
         # Assume that this is just a standard DESI python package
@@ -362,6 +400,28 @@ install_package_common () {
 
         python -m compileall -f "${prefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
 
+    elif [ "${pkg}" = "desimodel" ]; then
+
+        python setup.py install --prefix=${prefix} >> "${logfile}" 2>&1
+
+        python -m compileall -f "${prefix}/lib/python${pysite}/site-packages" >> "${logfile}" 2>&1
+
+        datascript=$(printf "%s/etc/%s" "$(pwd)" "$(basename ./etc/desimodel_data.sh)")
+        mkdir -p "${prefix}/desimodel"
+        pushd "${prefix}/desimodel" > /dev/null
+        mastercheck=$(echo ${pkgver} | sed -e "s#master.*#master#")
+        if [ "x${mastercheck}" = "xmaster" ]; then
+            export DESIMODEL_VERSION="trunk"
+        else
+            export DESIMODEL_VERSION="${pkgver}"
+        fi
+        eval "/bin/bash ${datascript}"
+        popd > /dev/null
+
+        export DESIMODEL="${prefix}/desimodel"
+        echo "export DESIMODEL=\"${prefix}/desimodel\"" >> "${setup}"
+        echo "setenv DESIMODEL \"${prefix}/desimodel\"" >> "${outmod}"
+
     else
 
         # Assume that this is just a standard DESI python package
@@ -481,8 +541,9 @@ common="no"
 versionfile=""
 moduleinit=""
 single=""
+desiroot="/project/projectdirs/desi"
 
-while getopts ":p:v:ce:s:" opt; do
+while getopts ":p:v:ce:s:r:" opt; do
     case $opt in
         p)
             prefix=$OPTARG
@@ -497,6 +558,9 @@ while getopts ":p:v:ce:s:" opt; do
             ;;
         s)
             single=$OPTARG
+            ;;
+        r)
+            desiroot=$OPTARG
             ;;
         \?)
             show_help
@@ -613,6 +677,8 @@ else
         > "${outmod}"
 
     echo "conflict desi" >> "${outmod}"
+    echo "" >> "${outmod}"
+    echo "setenv DESI_ROOT \"${desiroot}\"" >> "${outmod}"
     echo "" >> "${outmod}"
 
     # install the module version file into the temporary location

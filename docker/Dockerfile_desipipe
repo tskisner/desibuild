@@ -22,7 +22,7 @@ RUN mkdir -p /desi/spectro_data \
 # should change that.
 
 ENV DESI_ROOT /desi/root
-ENV DESIMODEL /desi/model
+ENV DESIMODEL /usr/desimodel
 ENV DESI_SPECTRO_DATA /desi/spectro_data
 ENV DESI_SPECTRO_REDUX /desi/spectro_redux
 ENV DESI_BASIS_TEMPLATES "${DESI_ROOT}/spectro/templates/basis_templates/v2.2"
