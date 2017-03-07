@@ -260,7 +260,7 @@ install_package () {
         if [ "x${mastercheck}" = "xmaster" ]; then
             export DESIMODEL_VERSION="trunk"
         else
-            export DESIMODEL_VERSION="${pkgver}"
+            export DESIMODEL_VERSION="tags/${pkgver}"
         fi
         eval "/bin/bash ${datascript}"
         popd > /dev/null
@@ -413,7 +413,7 @@ install_package_common () {
         if [ "x${mastercheck}" = "xmaster" ]; then
             export DESIMODEL_VERSION="trunk"
         else
-            export DESIMODEL_VERSION="${pkgver}"
+            export DESIMODEL_VERSION="tags/${pkgver}"
         fi
         eval "/bin/bash ${datascript}"
         popd > /dev/null
