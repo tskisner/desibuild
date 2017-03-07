@@ -1,5 +1,3 @@
 setenv DESI_ROOT /opt/desi
 
-setenv DESI_BASIS_TEMPLATES /opt/desi/spectro/templates/basis_templates/v2.2
-
-setenv DESIMODEL /home/kisner/software/svn/desimodel_trunk
+setenv DESI_BASIS_TEMPLATES /opt/desi/spectro/templates/basis_templates/v2.3

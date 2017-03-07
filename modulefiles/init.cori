@@ -1,11 +1,9 @@
 
 if [ module-info mode load ] {
-  module use /global/common/edison/contrib/desi/modulefiles
-  module load desi-conda/3.5-20160913
+  module load desiconda/1.0.4-20170306
 }
 
 setenv DESI_ROOT /project/projectdirs/desi
 
-setenv DESI_BASIS_TEMPLATES /project/projectdirs/desi/spectro/templates/basis_templates/v2.2
+setenv DESI_BASIS_TEMPLATES /project/projectdirs/desi/spectro/templates/basis_templates/v2.3
 
-setenv DESIMODEL /project/projectdirs/desi/software/edison/desimodel/master
