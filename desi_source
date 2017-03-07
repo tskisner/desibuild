@@ -50,8 +50,7 @@ while IFS='' read -r line || [[ -n "${line}" ]]; do
     echo "  Syncing local clone with origin"
 
     cd "${pkg}"
-    git fetch >> "${logfile}" 2>&1
-    git remote prune origin >> "${logfile}" 2>&1
+    git fetch --tags --prune >> "${logfile}" 2>&1
 
     # is the requested branch actually a tag?
     found=$(git tag --list 2>/dev/null | grep ${branch})
