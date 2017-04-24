@@ -443,24 +443,7 @@ if moddir is None:
 
 # Get git version of desibuild
 
-here = os.path.abspath(os.getcwd())
-os.chdir(scriptdir)
-
-com = ["git", "describe", "--tags", "--dirty", "--always"]
-out, err = tools.sprun(com)
-desc = out[0].split("-")
-
-buildver = None
-if len(desc) == 1:
-    # we are at a tag
-    buildver = desc[0]
-else:
-    com = ["git", "rev-list", "--count", "HEAD"]
-    out, err = tools.sprun(com)
-    cnt = out[0]
-    buildver = "{}.dev{}".format(desc[0], cnt)
-
-os.chdir(here)
+buildver = tools.build_version(scriptdir)
 
 # Get package information
 

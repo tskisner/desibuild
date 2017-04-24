@@ -109,6 +109,29 @@ def modify_env(envset, envprepend):
     return
 
 
+def build_version(scriptdir):
+    # Get git version of desibuild
+    here = os.path.abspath(os.getcwd())
+    os.chdir(scriptdir)
+
+    com = ["git", "describe", "--tags", "--dirty", "--always"]
+    out, err = sprun(com)
+    desc = out[0].split("-")
+
+    buildver = None
+    if len(desc) == 1:
+        # we are at a tag
+        buildver = desc[0]
+    else:
+        com = ["git", "rev-list", "--count", "HEAD"]
+        out, err = sprun(com)
+        cnt = out[0]
+        buildver = "{}.dev{}".format(desc[0], cnt)
+
+    os.chdir(here)
+    return buildver
+
+
 def desi_version(buildver, depstr):
     dephash = md5(depstr.encode(encoding="ascii")).hexdigest()[:6]
     #datestr = time.strftime("%Y%m%d", time.localtime(time.time()))
