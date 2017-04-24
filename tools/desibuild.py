@@ -109,6 +109,18 @@ def modify_env(envset, envprepend):
     return
 
 
+def git_version():
+    com = ["git", "branch", "--list"]
+    allbranch, err = sprun(com)
+    ver = None
+    for b in allbranch:
+        mat = re.match(r"[\*]*\s+(.*)", b)
+        if mat is not None
+            br = mat.group(1)
+            ver = re.sub(r"work-", "", br)
+    return ver
+
+
 def build_version(scriptdir):
     # Get git version of desibuild
     here = os.path.abspath(os.getcwd())

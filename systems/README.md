@@ -8,9 +8,8 @@ to the correct version of the desiconda image.
 
 ## Set the Versions
 
-Edit the "desi_versions.txt" file to point to the branches / tags of each
-packages you are installing.  This file will be passed to the desibuild
-scripts when run inside the image.
+By default the docker file uses the stable versions of all packages.  You
+can obviously modify the docker file to use a different versions file.
 
 
 ## Build the Image

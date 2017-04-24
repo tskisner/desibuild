@@ -31,6 +31,9 @@ parser.add_argument("--prefix", required=True, type=str, default=None,
     help="Installation prefix.")
 parser.add_argument("--moduledir", required=False, type=str, default=None,
     help="Module file install directory.  Defaults to <prefix>/modulefiles.")
+parser.add_argument("--gitdir", required=False, type=str, default=None,
+    help="Directory containing the git clones of DESI packages.  "
+    "Defaults to current directory.")
 
 
 args = parser.parse_args()
@@ -41,16 +44,29 @@ moddir = args.moduledir
 if moddir is None:
     moddir = os.path.join(args.prefix, "modulefiles")
 
-# Get package information
-
-pkgs = tools.load_versions(args.versions)
-
 # Check install prefix
 
 if not os.path.isdir(args.prefix):
     raise RuntimeError("Install prefix {} does not exist".format(args.prefix))
 if not os.path.isdir(moddir):
     raise RuntimeError("Modulefile directory {} does not exist".format(moddir))
+
+# Get package information
+
+pkgs = tools.load_versions(args.versions)
+
+# Are we overriding versions with the current git checkouts?
+
+here = os.path.abspath(os.getcwd())
+
+if args.gitdir is not None:
+    os.chdir(args.gitdir)
+    for pkg in pkgs:
+        os.chdir(pkg["name"])
+        gitver = tools.git_version()
+        pkg["version"] = gitver
+        os.chdir("..")
+    os.chdir(here)
 
 # Process all packages
 
@@ -69,10 +85,6 @@ for pkg in pkgs:
 
 buildver = tools.build_version(scriptdir)
 desiversion = tools.desi_version(buildver, depstr)
-
-# FIXME:  if we have already updated the desibuild tree, then we won't have
-# same build version used to do the original install.  Instead we could use
-# the dep hash to find the "right" desi module version...
 
 pkgmoddir = os.path.join(moddir, "desi")
 pkgver = os.path.join(pkgmoddir, ".version_{}".format(desiversion))

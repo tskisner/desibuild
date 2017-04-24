@@ -1,51 +1,64 @@
 # Scripts and Tools for Installation of DESI Software
 
 The idea behind these scripts is to keep them as simple as possible, but
-no simpler.  **Disclaimer:**  These are the scripts I use when working on
-pipeline development.  They are posted here in case someone finds them 
-useful.  They are not official DESI products.
+no simpler.
 
-## Use Cases
+## Examples
 
-Hopefully one of these situations describes what you are looking for...
+Sometimes it is easiest to start with examples before going into all the
+detailed options.
 
-### Someone Already Installed Everything, but I Want to Modify Package "X"
+### Example 1:  Latest Versions on a Personal Workstation
 
-This is easy.  Load the full software stack installed by someone else, then
-unload the package you want to work on.  Say that you are working on package
-"desiblat":
+Assume that we have a shell command "desideps" that activates a conda
+environment and loads the compiled DESI dependencies into our environment.
+Also assume that we have a local copy of all the DESI auxiliary files (i.e.
+the needed things found in $DESI_ROOT) in ~/desi.  We want to install the 
+DESI tools to ~/software/desi, and we don't want to deal with modulefiles:
 
+    $>  desideps
+    $>  git clone https://github.com/tskisner/desibuild.git
+    $>  ./desibuild/desi_source \
+        --versions ./desibuild/systems/versions_master_https.txt
+    $>  ./desibuild/desi_setup \
+        --versions ./desibuild/systems/versions_master_https.txt \
+        --prefix ~/software/desi \
+        --common --desiroot ~/desi
+
+This installs all tools to the same prefix, and there is a shell script
+that we can source which loads this into our environment:
+
+    $>  desideps
+    $>  source ~/software/desi/setup.sh
+
+
+### Example 2:  Stable Versions at NERSC
+
+For this example, we'll install stable versions of all the DESI packages
+into our scratch directory on cori.nersc.gov.  We'll also override the basis
+templates to point to the latest checkout of trunk.  We will use the desiconda
+module installed by the DESI project to provide our dependencies:
+
+    $>  module use /global/common/cori/contrib/desi/modulefiles
+    $>  module load desiconda
+
+Now get the source:
+
+    $>  git clone https://github.com/tskisner/desibuild.git
+    $>  ./desibuild/desi_source \
+        --versions ./desibuild/systems/versions_stable_https.txt
+    $>  ./desibuild/desi_setup \
+        --versions ./desibuild/systems/versions_stable_https.txt \
+        --prefix ${SCRATCH}/software/desi \
+        --desiroot /project/projectdirs/desi \
+        --basisdir spectro/templates/basis_templates/trunk \
+        --init ./desibuild/systems/init.cori
+
+The install prefix will now contain subdirectories for each package and version
+as well as module files that we can load:
+
+    $>  module use ${SCRATCH}/software/desi/modulefiles
     $>  module load desi
-    $>  module unload desiblat
-
-Now git clone desiblat somewhere and install it somewhere in your PATH / 
-PYTHONPATH.
-
-### I Already Installed Everything, but Now Want an Alternate Version of One Package
-
-You can run desi_setup in "single package" mode.  See the subsection under
-Installation.
-
-### I Want to Install Everything, but with Custom Versions of Packages
-
-No problem.  You should copy one of the "versions_*" text files in the "systems"
-directory.  Name it something you like.  Now edit the versions of each package
-that you want to install.  For example, you might start with a file that
-has the latest stable tagged versions of all packages and change one or
-more of the package versions to "master".  Now proceed with the installation
-instructions below.
-
-### I Want to Install Everything, but Using Different Dependencies
-
-By default the DESI packages will be installed using whatever dependencies
-are currently found in your environment at install time.  If you have a 
-complicated set of commands to run to load your dependencies, then you can
-have the top-level "desi" module run those when it is loaded.
-
-Create a text file with the module snippet you want inserted into the top-level
-desi modulefile.  See for example the "systems/init.*" files used at NERSC to
-load the desiconda module, which provides all our dependencies.  Pass the 
-name of your file to the "--init" option to desi_setup.
 
 
 ## Installation
@@ -65,28 +78,27 @@ BOOST, LAPACK, mpi4py, HARP).
 
 ### Get the Source
 
-Now make a working directory.  For this example, just put it in the top
-of the desibuild source tree, but it could be anywhere.  We will use the
-"desi_source" script and our text file of versions to get everything:
+We need to decide where to put the git source trees for all the DESI
+packages.  The default is to use the current working directory.  For this 
+example, we'll run from a top-level directory that contains the desibuild
+git clone.  We'll put all the source trees into a directory "desi_repos":
 
-    $>  mkdir build
-    $>  cd build
-    $>  ../desi_source versions.txt
+    $>  ./desibuild/desi_source \
+    --versions ./desibuild/systems/versions_stable_https.txt \
+    --gitdir ./desi_repos
 
-
-  See the "systems/versions_*" files
-for
-
-Where "versions.txt" is the file you have copied / modified that lists the
-packages and their versions to install.  When this finishes, you should
-have a git clone of every repo, and the working state inside each clone 
-should be set to a local checkout of the specified branch/tag.
+This will create the directory passed in the "--gitdir" option and check out
+all the desi git repos into that location.  The versions file contains the
+list of packages, the git URL to use, and the git branch/tag to use.  When 
+this finishes, you should have a git clone of every repo, and the working 
+state inside each clone should be set to a local checkout of the specified 
+branch/tag.
 
 **NOTE:**  At this point you can go into those git clones and make new
 branches, etc.  Whatever branch is checked out in each package is the one
 that will be installed.  If you are working on multiple packages, just run
-desi_source once with master.txt and then go create / checkout all the branches
-you need across multiple packages!
+desi_source once and then go create / checkout all the branches you need 
+across multiple packages.
 
 
 ### Installation Choices
@@ -94,7 +106,7 @@ you need across multiple packages!
 Decide where you want to install things.  At NERSC, you should put everything
 in your ${SCRATCH} directory somewhere for performance.  You can also install
 software in two different configurations.  The default option installs all 
-packages to versioned directories and creates modulefiles and shell files to 
+packages to versioned directories and creates modulefiles and a shell file to 
 load these into your environment.  Alternatively, you can install all 
 packages to the same directory, overwriting any previous versions that exist.
 This single-directory mode is useful for development versions of the software
@@ -104,7 +116,7 @@ present.
 If you are going to be using modules to load the installed software, 
 determine any module commands needed to set up your dependencies.  Place
 those commands into a small text file.  For NERSC systems, you should use one 
-of the examples in the "modulefiles" directory unless you know what you are 
+of the examples in the "systems/init.*" files unless you know what you are 
 doing.  On a personal system or other HPC center, ensure that you know what 
 module commands are needed to get the python stack and other dependencies into
 your environment.
@@ -115,27 +127,29 @@ your environment.
 This is the default, and versioned per-package subdirectories will be created 
 underneath the prefix location.  This command will use the *current state* 
 of all the git clones.  So if you made a local branch after getting the 
-source with "desi_source", then that is what will be installed:
+source with "desi_source", then that is what will be installed.  For this
+example, assume we are installing in our scratch space on cori.nersc.gov:
 
-    $>  ../desi_setup \
-        -p <prefix> \
-        -v versions.txt \
-        -e <my module snippet>
+    $>  ./desibuild/desi_setup \
+    --versions ./desibuild/systems/versions_stable_https.txt \
+    --gitdir ./desi_repos \
+    --prefix ${SCRATCH}/software/desi \
+    --desiroot /project/projectdirs/desi \
+    --basisdir spectro/templates/basis_templates/trunk \
+    --init ./desibuild/systems/init.cori
 
-This installs everything.  If you don't use modules on your system (and 
-therefore are managing your dependencies through other shell functions or
-techniques), then you can just source the top-level "setup.sh" file that was
-created in the installation prefix:
+This installs everything.  You can load the latest versions of the tools into
+your environment by directly source the shell snippet:
 
-    $>  source <prefix>/setup.sh
+    $>  source ${SCRATCH}/software/desi/setup.sh
 
-Otherwise, you can now do:
+Or by loading the "desi" module:
 
-    $>  module use <prefix>/modulefiles
+    $>  module use ${SCRATCH}/software/desi/modulefiles
     $>  module load desi
 
-Where "prefix" is obviously what you specified with the "-p" option to 
-desi_setup.  All DESI software is now ready to use.
+Note that if you don't want to load the default version, you should manually
+specify which version of the desi module you want to load.
 
 
 ### Installing to a Single Directory
@@ -144,7 +158,7 @@ Sometimes it is useful to install all DESI packages to a single prefix, and
 just have that one location in your environment.  This is particularly nice
 when doing development and also when installing to a fixed docker image.
 
-Simply pass the "-c" option to desi_setup.  The top-level setup.sh script
+Simply pass the "--common" option to desi_setup.  The top-level setup.sh script
 and the "desi" modulefile will be created, but per-package module files
 obviously are redundant in this case.
 
@@ -152,47 +166,57 @@ obviously are redundant in this case.
 ### Install a Single Package
 
 Imagine you have already installed all the packages you want, but now want 
-to install an alternate version (like master) of a single package.  This is 
-just a convenience.  Obviously you could just unload the module for the package 
-you are testing, and then manually prepend to PATH and PYTHONPATH, etc.  
-However, you can also use desi_setup in "single package mode".  First load 
-your previous module stack to make sure any dependencies are loaded:
+to install an alternate version (like master) of a single package.  In this 
+case you can use desi_setup in "single package mode".  First load your 
+previous module stack to make sure any dependencies are loaded:
 
     $>  module load desi
 
 Now go install a different version of one package:
 
-    $>  ../desi_setup \
-        -p <prefix> \
-        -s <path/to/git/clone/desiblat>
+    $>  ./desibuild/desi_setup \
+    --gitdir ./desi_repos \
+    --prefix ${SCRATCH}/software/desi \
+    --single desispec
 
-In this example, we give the path to a clone of "desiblat" with the "-s" 
-option.  This will infer the package name from the path (desiblat in this 
-case).  It will then install the package to the prefix as usual.  It will 
-**NOT** create a new desi module file, and will not create a new module 
-version file.  You will have to manually swap/load this module file in order 
-to use it.
+This would install the current version of desispec into the prefix and also
+make a module file.  You can then do:
 
-If you install a single package in "common prefix" mode (-c option), then
-this single package will replace any other versions of the package that are
-already installed to the common prefix.
+    $>  module swap desispec desispec/<new version>
+
+Single package installs do not change the top-level "desi" module files, so
+you must manually swap in the alternate version of packages installed this
+way.
 
 
 ### Set Default Versions
 
 Just installing the packages and module files in the previous section does
 *NOT* change the default versions of any module files.  Instead it creates
-a temporary ".version" file that is ready to be moved into place.  To make
-your freshly installed software the default just do:
+a corresponding ".version" file for each package that can be symlinked to
+the main .version file.  Given an install prefix, you can set the default
+versions to those in a versions file:
 
-    $>  ../desi_updatemod -p <prefix>
+    $>  ./desibuild/desi_defaults \
+    --versions ./desibuild/systems/versions_stable_https.txt \
+    --prefix ${SCRATCH}/software/desi
 
-and now running "module avail" should reflect the change in the default
-module versions.
+If you instead wanted to set the defaults to the current git repo versions
+(because you had made new branches after running desi_source and before
+installing), then just specify the location of the git repos to use for the
+versions:
+
+    $>  ./desibuild/desi_defaults \
+    --versions ./desibuild/systems/versions_stable_https.txt \
+    --prefix ${SCRATCH}/software/desi \
+    --gitdir ./desi_repos
+
+Now running "module avail" should reflect the change in the default module 
+versions.
 
 
 ## Docker Images
 
 If you want to build a docker image containing the DESI tools, see the 
-README in the "docker" sub-directory.
+README in the "systems" sub-directory.
 

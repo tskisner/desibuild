@@ -446,7 +446,7 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
 
 parser = argparse.ArgumentParser(description="Install DESI packages.")
 
-parser.add_argument("--versions", required=True, type=str, default=None,
+parser.add_argument("--versions", required=False, type=str, default=None,
     help="Path to the versions file.  File format is 3 columns of "
     "<package name> <git URL> <branch/tag name>.")
 
@@ -481,6 +481,9 @@ parser.add_argument("--init", required=False, type=str, default=None,
 
 args = parser.parse_args()
 
+if args.single is None and args.version is None:
+    raise RuntimeError("You must specify a versions file if not running in single-package mode.")
+
 # Module install location
 
 moddir = args.moduledir
@@ -493,13 +496,22 @@ initfile = args.init
 if initfile is not None:
     initfile = os.path.abspath(initfile)
 
+# Version file
+
+verfile = args.versions
+if verfile is not None:
+    verfile = os.path.abspath(verfile)
+
 # Get git version of desibuild
 
 buildver = tools.build_version(scriptdir)
 
-# Get package information
+# Install locations
 
-pkgs = tools.load_versions(args.versions)
+if not os.path.isdir(args.prefix):
+    os.makedirs(args.prefix)
+if not os.path.isdir(moddir):
+    os.makedirs(moddir)
 
 # Directory for git clones
 
@@ -511,33 +523,46 @@ if gitdir is None:
 else:
     os.chdir(gitdir)
 
-# Install packages
+# Get package information
 
-if not os.path.isdir(args.prefix):
-    os.makedirs(args.prefix)
-if not os.path.isdir(moddir):
-    os.makedirs(moddir)
+pkgs = []
+if args.single is not None:
+    pkgs.append({"name" : args.single})
+else:
+    pkgs = tools.load_versions(verfile)
+
+# Get the current git versions of all packages,
+# which may be different than the versions that were
+# originally checked out by desi_source.
+
+for pkg in pkgs:
+    os.chdir(pkg["name"])
+    gitver = tools.git_version()
+    pkg["version"] = gitver
+    os.chdir("..")
 
 if args.single is not None:
     # install a single package and its modulefile
-    pkg = pkgs[args.single]
-    os.chdir(pkg["name"])
-    envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix, 
-        args.desiroot, args.basisdir, args.common)
-    os.chdir("..")
+    for pkg in pkgs:
+        if pkg["name"] != args.single:
+            continue
+        os.chdir(pkg["name"])
+        envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix, 
+            args.desiroot, args.basisdir, args.common)
+        os.chdir("..")
 
-    if not common:
-        # every package gets its own modulefile
-        pkgmod = os.path.join(moddir, pkg["name"])
-        if not os.path.isdir(pkgmod):
-            os.makedirs(pkgmod)
-        modpath = os.path.join(pkgmod, pkg["version"])
-        modver = os.path.join(pkgmod, ".version_{}".format(pkg["version"]))
-        write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [])
-        write_moduleversion(modver, pkg["version"])
-    else:
-        print("WARNING: installed a single package to a common prefix.  "
-              "Some environment variables may not be updated properly.")
+        if not common:
+            # every package gets its own modulefile
+            pkgmod = os.path.join(moddir, pkg["name"])
+            if not os.path.isdir(pkgmod):
+                os.makedirs(pkgmod)
+            modpath = os.path.join(pkgmod, pkg["version"])
+            modver = os.path.join(pkgmod, ".version_{}".format(pkg["version"]))
+            write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [], [])
+            write_moduleversion(modver, pkg["version"])
+        else:
+            print("WARNING: installed a single package to a common prefix.  "
+                  "Some environment variables may not be updated properly.")
 
 else:
     # install all packages
