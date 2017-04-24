@@ -1,0 +1,511 @@
+#!/usr/bin/env python
+
+from __future__ import (absolute_import, division, print_function, 
+    unicode_literals)
+
+import sys
+import os
+import inspect
+import re
+import argparse
+import subprocess as sp
+import shutil
+import stat
+import compileall
+
+
+# The directory where this script is located.
+scriptdir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+
+# Add our tools directory to the search path.
+sys.path.append(os.path.join(scriptdir, "tools"))
+
+# Import our helper utilities
+import desibuild as tools
+from desibuild import clr as clr
+
+
+def report(label, out, err):
+    for line in out:
+        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+    for line in err:
+        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+    return
+
+def live_report(com, label):
+    p = sp.Popen(com, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True)
+    for line in p.stdout:
+        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line.splitlines()[0], clr.ENDC))
+    return
+
+
+def install_pkg(pkg, version, prefix, common=False):
+    print("Installing package {}".format(pkg))
+
+    pyver = tools.pyversion()
+
+    envset = [("DESI_{}_VERSION".format(pkg.upper()), version)]
+    envprepend = []
+
+    # package prefix
+    pkgprefix = prefix
+    if not common:
+        pkgprefix = os.path.join(prefix, pkg, version)
+
+    if pkg == "specex":
+        
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_include = os.path.join(pkgprefix, "include")
+        dir_lib = os.path.join(pkgprefix, "lib")
+
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_include):
+            os.makedirs(dir_include)
+        if not os.path.isdir(dir_lib):
+            os.makedirs(dir_lib)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("CPATH", dir_include) )
+        envprepend.append( ("LIBRARY_PATH", dir_lib) )
+        envprepend.append( ("LD_LIBRARY_PATH", dir_lib) )
+        envset.append( ("HARP_PLUGIN_PATH", dir_lib) )
+
+        tools.modify_env(envset, envprepend)
+
+        os.environ["SPECEX_PREFIX"] = pkgprefix
+        
+        com = ["make", "install"]
+        live_report(com, pkg)
+        
+        del os.environ["SPECEX_PREFIX"]
+
+    elif pkg == "fiberassign":
+        
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+
+        tools.modify_env(envset, envprepend)
+
+        # install the compiled tools
+
+        os.environ["INSTALL"] = dir_bin
+        
+        com = ["make", "install"]
+        live_report(com, pkg)
+
+        del os.environ["INSTALL"]
+
+        # copy scripts and python modules
+
+        tools.copy_scripts("bin", dir_bin)
+
+        dir_module = os.path.join(dir_pysite, "fiberassign")
+        if os.path.isdir(dir_module):
+            shutil.rmtree(dir_module)
+        shutil.copytree(os.path.join("py", "fiberassign"), 
+            dir_module)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
+
+    elif pkg == "redmonster":
+
+        # We just copy the source tree into the install prefix...
+
+        if os.path.isdir(pkgprefix):
+            shutil.rmtree(pkgprefix)
+        shutil.copytree(".", pkgprefix)
+
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_py = os.path.join(pkgprefix, "python")
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_py) )
+        envset.append( ("REDMONSTER_TEMPLATES_DIR", 
+            os.path.join(pkgprefix, "templates")) )
+
+        tools.modify_env(envset, envprepend)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_py, force=True, quiet=1)
+
+    elif pkg == "teststand":
+
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+
+        tools.modify_env(envset, envprepend)
+
+        # copy scripts, data, and python modules
+
+        tools.copy_scripts("bin", dir_bin)
+
+        dir_module = os.path.join(dir_pysite, "teststand")
+        if os.path.isdir(dir_module):
+            shutil.rmtree(dir_module)
+        shutil.copytree(os.path.join("py", "teststand"), 
+            dir_module)
+
+        dir_data = os.path.join(pkgprefix, "data")
+        if os.path.isdir(dir_data):
+            shutil.rmtree(dir_data)
+        shutil.copytree("data", dir_data)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
+
+    elif pkg == "desimodel":
+
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+        dir_model = pkgprefix
+        if common:
+            dir_model = os.path.join(pkgprefix, "desimodel")
+
+        if not os.path.isdir(dir_model):
+            os.makedirs(dir_model)
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+        envset.append( ("DESIMODEL", dir_model) )
+
+        tools.modify_env(envset, envprepend)
+
+        # install the python package
+
+        com = ["python", "setup.py", "install", "--prefix", pkgprefix]
+        live_report(com, pkg)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
+
+        # download data
+
+        print("  Downloading desimodel data...")
+
+        if version == "master":
+            os.environ["DESIMODEL_VERSION"] = "trunk"
+        else:
+            os.environ["DESIMODEL_VERSION"] = "tags/{}".format(version)
+
+        here = os.path.abspath(os.getcwd())
+
+        datascript = os.path.join(here, "etc", "desimodel_data.sh")
+
+        os.chdir(dir_model)
+        if os.path.isdir("data"):
+            shutil.rmtree("data")
+
+        com = [datascript]
+        live_report(com, pkg)
+
+        os.chdir(here)
+
+        del os.environ["DESIMODEL_VERSION"]
+
+    else:
+
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+
+        tools.modify_env(envset, envprepend)
+
+        # install the python package
+
+        com = ["python", "setup.py", "install", "--prefix", pkgprefix]
+        live_report(com, pkg)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
+
+    return envset, envprepend
+
+
+def write_setupfile(path, buildver, dephash, envset, envprepend):
+    with open(path, "w") as f:
+        f.write("#    DESI software\n")
+        f.write("# -------------------\n")
+        f.write("# desibuild version: {}\n".format(buildver))
+        f.write("# dependency hash: {}\n\n".format(dephash))
+        for v in envset:
+            f.write("export {}=\"{}\"\n".format(v[0], v[1]))
+        f.write("\n")
+        for ep in envprepend:
+            key = ep[0]
+            for v in ep[1]:
+                f.write("export {}=\"{}:${{{}}}\"\n".format(key, v, key))
+        f.write("\n\n")
+    return
+
+
+def write_modulefile(path, package, version, envset, envprepend, other):
+    with open(path, "w") as f:
+        f.write("#%Module###<-magic cookie #########################\n")
+        f.write("##\n")
+        f.write("##   DESI package \"{}\"\n".format(package))
+        f.write("##\n")
+        f.write("##\n")
+        f.write("\n")
+        f.write("module-whatis \"Loads desi package {}\"\n".format(package))
+        f.write("\n")
+        f.write("proc ModulesHelp { } {\n")
+        f.write("  global version\n")
+        f.write("  puts stderr \"\\t\\t DESI package {} - Version {}\\n\"\n".format(package, version))
+        f.write("  puts stderr \"\\t This modifies the shell environment to use an installed\"\n")
+        f.write("  puts stderr \"\\t version of {}.\"\n".format(package))
+        f.write("  puts stderr \"\"\n")
+        f.write("}\n")
+        f.write("\n")
+        f.write("conflict desi-{}\n".format(package))
+        f.write("\n")
+        for v in envset:
+            f.write("setenv {} \"{}\"\n".format(v[0], v[1]))
+        f.write("\n")
+        for ep in envprepend:
+            key = ep[0]
+            for v in ep[1]:
+                f.write("prepend-path {} \"{}\"\n".format(key, v))
+        f.write("\n")
+        for line in other:
+            f.write("{}\n".format(line))
+        f.write("\n")
+    return
+
+
+def write_moduleversion(path, version):
+    with open(path, "w") as f:
+        f.write("#%Module###<-magic cookie #########################\n")
+        f.write("####\n")
+        f.write("## version file\n")
+        f.write("##\n")
+        f.write("set ModulesVersion      \"{}\"\n\n".format(version))
+    return
+
+
+def install_packages(pkgs, prefix, moddir, buildver, common=False):
+
+    depstr = ""
+
+    allset = []
+    allprepend = []
+
+    for pkg in pkgs:
+        here = os.path.abspath(os.getcwd())
+        os.chdir(os.path.join(here, pkg["name"]))
+
+        envset, envprepend = install_pkg(pkg["name"], pkg["version"], 
+            prefix, common)
+        allset.extend(envset)
+        allprepend.extend(envprepend)
+
+        if not common:
+            # every package gets its own modulefile
+            pkgmod = os.path.join(moddir, pkg["name"])
+            if not os.path.isdir(pkgmod):
+                os.makedirs(pkgmod)
+            modpath = os.path.join(pkgmod, pkg["version"])
+            modver = os.path.join(pkgmod, ".version_{}".format(pkg["version"]))
+            write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [])
+            write_moduleversion(modver, pkg["version"])
+
+        depstr = "{}{}".format(depstr, pkg["version"])
+        os.chdir(here)
+
+    # generated desi version
+
+    desiversion = tools.desi_version(buildver, depstr)
+    allset.append( ("DESI_VERSION", desiversion) )
+
+    # Remove duplicates from the prepended paths
+
+    uniq = {}
+    for ap in allprepend:
+        if ap[0] in uniq:
+            if ap[1] not in uniq[ap[0]]:
+                uniq[ap[0]].append(ap[1])
+        else:
+            uniq[ap[0]] = []
+            uniq[ap[0]].append(ap[1])
+
+    uniqprepend = []
+    for ap in allprepend:
+        uniqprepend.append( (ap[0], uniq[ap[0]] ) )
+
+    # Create a shell file that can be sourced as an alternative to using
+    # modulefiles.
+
+    setupfile = os.path.join(prefix, "setup.sh")
+    write_setupfile(setupfile, buildver, desiversion, allset, uniqprepend)
+
+    # Create the top-level "desi" modulefile
+
+    desimoddir = os.path.join(moddir, "desi")
+    if not os.path.isdir(desimoddir):
+        os.makedirs(desimoddir)
+    moddesi = os.path.join(desimoddir, desiversion)
+    modver = os.path.join(desimoddir, ".version_{}".format(desiversion))
+    
+    if common:
+        # In this case we dump all the environment modifications into
+        # the top level module file.    
+        write_modulefile(moddesi, "desi", desiversion, allset, uniqprepend, [])
+    else:
+        # Instead, we add lines that load the per-package modulefiles.
+        loads = []
+        for pkg in pkgs:
+            loads.append(" ")
+            loads.append("if [ module-info mode load ] {")
+            loads.append("  if [ is-loaded {} ] {{".format(pkg["name"]))
+            loads.append("  } else {")
+            loads.append("    module load {}/{}".format(pkg["name"], pkg["version"]))
+            loads.append("  }")
+            loads.append("}")
+        write_modulefile(moddesi, "desi", desiversion, 
+            [("DESI_VERSION", desiversion)], [], loads)
+
+    write_moduleversion(modver, desiversion)
+
+
+# Get our options
+
+parser = argparse.ArgumentParser(description="Install DESI packages.")
+
+parser.add_argument("--versions", required=True, type=str, default=None,
+    help="Path to the versions file.  File format is 3 columns of "
+    "<package name> <git URL> <branch/tag name>.")
+
+parser.add_argument("--prefix", required=True, type=str, default=None,
+    help="Installation prefix.")
+
+parser.add_argument("--desiroot", required=True, type=str, default=None,
+    help="The directory to use for the DESI_ROOT environment variable.")
+
+parser.add_argument("--gitdir", required=False, type=str, default=None,
+    help="Directory containing the git clones of DESI packages.  "
+    "Defaults to current directory.")
+
+parser.add_argument("--common", required=False, action="store_true", 
+    default=False, help="Install all packages to a common prefix, rather than "
+    "versioned subdirectories")
+
+parser.add_argument("--moduledir", required=False, type=str, default=None,
+    help="Module file install directory.  Defaults to <prefix>/modulefiles.")
+
+parser.add_argument("--single", required=False, type=str, default=None,
+    help="Ignore the versions file and just install this single package.")
+
+
+args = parser.parse_args()
+
+# Module install location
+
+moddir = args.moduledir
+if moddir is None:
+    moddir = os.path.join(args.prefix, "modulefiles")
+
+# Get git version of desibuild
+
+here = os.path.abspath(os.getcwd())
+os.chdir(scriptdir)
+
+com = ["git", "describe", "--tags", "--dirty", "--always"]
+out, err = tools.sprun(com)
+desc = out[0].split("-")
+
+buildver = None
+if len(desc) == 1:
+    # we are at a tag
+    buildver = desc[0]
+else:
+    com = ["git", "rev-list", "--count", "HEAD"]
+    out, err = tools.sprun(com)
+    cnt = out[0]
+    buildver = "{}.dev{}".format(desc[0], cnt)
+
+os.chdir(here)
+
+# Get package information
+
+pkgs = tools.load_versions(args.versions)
+
+# Directory for git clones
+
+gitdir = args.gitdir
+if gitdir is None:
+    gitdir = here
+else:
+    os.chdir(gitdir)
+
+# Install packages
+
+if not os.path.isdir(args.prefix):
+    os.makedirs(args.prefix)
+if not os.path.isdir(moddir):
+    os.makedirs(moddir)
+
+if args.single is not None:
+    # install a single package and its modulefile
+    pkg = pkgs[args.single]
+    os.chdir(pkg["name"])
+    envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix, 
+        args.common)
+    os.chdir("..")
+
+    if not common:
+        # every package gets its own modulefile
+        pkgmod = os.path.join(moddir, pkg["name"])
+        if not os.path.isdir(pkgmod):
+            os.makedirs(pkgmod)
+        modpath = os.path.join(pkgmod, pkg["version"])
+        modver = os.path.join(pkgmod, ".version_{}".format(pkg["version"]))
+        write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [])
+        write_moduleversion(modver, pkg["version"])
+    else:
+        print("WARNING: installed a single package to a common prefix.  "
+              "Some environment variables may not be updated properly.")
+
+else:
+    # install all packages
+    install_packages(pkgs, args.prefix, moddir, buildver, common=args.common)
+
+# Back to where we started
+
+os.chdir(here)

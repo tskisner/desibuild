@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+
+from __future__ import (absolute_import, division, print_function, 
+    unicode_literals)
+
+import sys
+import os
+import inspect
+import re
+import argparse
+import subprocess as sp
+
+# The directory where this script is located.
+scriptdir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+
+# Add our tools directory to the search path.
+sys.path.append(os.path.join(scriptdir, "tools"))
+
+# Import our helper utilities
+import desibuild as tools
+from desibuild import clr as clr
+
+
+def gitreport(out, err):
+    for line in out:
+        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+    for line in err:
+        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+    return
+
+
+# Get our options
+
+parser = argparse.ArgumentParser(description="Create or update local "
+    "checkouts of packages.")
+parser.add_argument("--versions", required=True, type=str, default=None,
+    help="Path to the versions file.  File format is 3 columns of "
+    "<package name> <git URL> <branch/tag name>.")
+parser.add_argument("--gitdir", required=False, type=str, default=None,
+    help="Directory containing the git clones of DESI packages.  "
+    "Defaults to current directory.")
+
+
+args = parser.parse_args()
+
+# Get package information
+
+pkgs = tools.load_versions(args.versions)
+
+# Directory for git clones
+
+gitdir = args.gitdir
+if gitdir is None:
+    gitdir = os.getcwd()
+
+if not os.path.isdir(gitdir):
+    os.makedirs(gitdir)
+
+# Set working directory
+
+os.chdir(gitdir)
+
+for pkg in pkgs:
+    print("Working on package {}".format(pkg["name"]))
+
+    if os.path.isdir(pkg["name"]):
+        print("  git clone already exists")
+    else:
+        print("  cloning repository")
+        com = ["git", "clone", pkg["url"]]
+        out, err = tools.sprun(com)
+        gitreport(out, err)
+
+    print("  syncing local clone with origin")
+    os.chdir(pkg["name"])
+
+    com = ["git", "fetch", "--tags", "--prune"]
+    out, err = tools.sprun(com)
+    gitreport(out, err)
+
+    # See if the requested version is actually a tag
+
+    com = ["git", "tag", "--list"]
+    out, err = tools.sprun(com)
+    gitreport([], err)
+    
+    is_a_tag = False
+    if pkg["version"] in out:
+        is_a_tag = True
+
+    # We need a list of all branches regardless
+
+    com = ["git", "branch", "--list"]
+    allbranch, err = tools.sprun(com)
+    gitreport([], err)
+
+    branches = [ re.sub(r"[\*]*\s+", "", x) for x in allbranch ]
+
+    if is_a_tag:
+        print("  version {} is a valid git tag".format(pkg["version"]))
+
+        # Does a working branch already exist for this tag?  Either
+        # use it or create it.
+
+        workb = "work-{}".format(pkg["version"])
+
+        if workb in branches:
+            print("  checking out existing working branch for tag {}".format(pkg["version"]))
+            com = ["git", "checkout", workb]
+            out, err = tools.sprun(com)
+            gitreport(out, err)
+        else:
+            print("  creating new working branch for tag {}".format(pkg["version"]))
+            com = ["git", "checkout", "-b", workb, "tags/{}".format(pkg["version"])]
+            out, err = tools.sprun(com)
+            gitreport(out, err)
+
+    else:
+        # Do we already have a local branch tracking the remote?
+
+        if pkg["version"] in branches:
+            print("  checking out existing local branch {}".format(pkg["version"]))
+            com = ["git", "checkout", pkg["version"]]
+            out, err = tools.sprun(com)
+            gitreport(out, err)
+
+            print("  rebasing local branch {} against origin".format(pkg["version"]))
+            com = ["git", "rebase", "origin/{}".format(pkg["version"])]
+            out, err = tools.sprun(com)
+            gitreport(out, err)
+
+        else:
+            print("  creating local branch {}".format(pkg["version"]))
+            com = ["git", "checkout", "-b", pkg["version"], "-t", "origin/{}".format(pkg["version"])]
+            out, err = tools.sprun(com)
+            gitreport(out, err)
+
+    print("  cleaning package")
+
+    if pkg["name"] == "specex":
+        com = ["make", "clean"]
+    elif pkg["name"] == "fiberassign":
+        com = ["make", "clean"]
+    else:
+        com = None
+    
+    if com is not None:
+        out, err = tools.sprun(com)
+        for line in out:
+            print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, pkg["name"], clr.ENDC, clr.LGRAY, line, clr.ENDC))
+        for line in err:
+            print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, pkg["name"], clr.ENDC, clr.LGRAY, line, clr.ENDC))
+
+    os.chdir("..")
+
+

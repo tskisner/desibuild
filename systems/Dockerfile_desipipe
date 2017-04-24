@@ -42,11 +42,12 @@ WORKDIR /usr/src/desi
 
 # Install all DESI packages
 
-COPY desi_versions.txt /usr/
+COPY versions_stable_https.txt /usr/
 
 RUN git clone https://github.com/tskisner/desibuild.git \
-    && ./desibuild/desi_source /usr/desi_versions.txt \
-    && ./desibuild/desi_setup -c -p /usr -v /usr/desi_versions.txt \
+    && ./desibuild/desi_source --versions /usr/versions_stable_https.txt \
+    && ./desibuild/desi_setup --common --prefix /usr --versions \
+    /usr/versions_stable_https.txt \
     && rm -rf /usr/src/desi/*
 
 # Set the entrypoint and default command

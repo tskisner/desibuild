@@ -2,10 +2,10 @@ desiutil        https://github.com/desihub/desiutil.git         1.9.3
 desimodel       https://github.com/desihub/desimodel.git	    0.5.1
 specsim         https://github.com/desihub/specsim.git          v0.7
 desitarget      https://github.com/desihub/desitarget.git	    0.9.0
-desisim         https://github.com/desihub/desisim.git		    0.18.1
+desisim         https://github.com/desihub/desisim.git          0.18.1
 fiberassign     https://github.com/desihub/fiberassign.git      0.3.2
-specter         https://github.com/desihub/specter.git		    0.7.0
+specter         https://github.com/desihub/specter.git          0.7.0
 specex          https://github.com/desihub/specex.git           v0.4.3
 redmonster      https://github.com/desihub/redmonster.git       master
-desispec        https://github.com/desihub/desispec.git		    0.13.1
+desispec        https://github.com/desihub/desispec.git         0.13.1
 teststand       https://github.com/desihub/teststand.git        master
