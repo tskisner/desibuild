@@ -1,8 +1,4 @@
 
 if [ module-info mode load ] {
-  module load desiconda/1.0.4-20170306
+  module load desiconda/20170414-1.1.2-spectro
 }
-
-setenv DESI_ROOT /project/projectdirs/desi
-
-setenv DESI_BASIS_TEMPLATES /project/projectdirs/desi/spectro/templates/basis_templates/v2.3

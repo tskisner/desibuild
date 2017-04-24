@@ -39,7 +39,7 @@ def live_report(com, label):
     return
 
 
-def install_pkg(pkg, version, prefix, common=False):
+def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     print("Installing package {}".format(pkg))
 
     pyver = tools.pyversion()
@@ -231,6 +231,32 @@ def install_pkg(pkg, version, prefix, common=False):
 
         del os.environ["DESIMODEL_VERSION"]
 
+    elif pkg == "desisim":
+
+        dir_bin = os.path.join(pkgprefix, "bin")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        envprepend.append( ("PATH", dir_bin) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+        envset.append( ("DESI_BASIS_TEMPLATES", os.path.join(desiroot, basisdir)) )
+
+        tools.modify_env(envset, envprepend)
+
+        # install the python package
+
+        com = ["python", "setup.py", "install", "--prefix", pkgprefix]
+        live_report(com, pkg)
+
+        # compile python modules
+
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
+
     else:
 
         dir_bin = os.path.join(pkgprefix, "bin")
@@ -259,24 +285,20 @@ def install_pkg(pkg, version, prefix, common=False):
     return envset, envprepend
 
 
-def write_setupfile(path, buildver, dephash, envset, envprepend):
+def write_setupfile(path, envset, envprepend):
     with open(path, "w") as f:
         f.write("#    DESI software\n")
-        f.write("# -------------------\n")
-        f.write("# desibuild version: {}\n".format(buildver))
-        f.write("# dependency hash: {}\n\n".format(dephash))
+        f.write("# -------------------\n\n")
         for v in envset:
             f.write("export {}=\"{}\"\n".format(v[0], v[1]))
         f.write("\n")
         for ep in envprepend:
-            key = ep[0]
-            for v in ep[1]:
-                f.write("export {}=\"{}:${{{}}}\"\n".format(key, v, key))
+            f.write("export {}=\"{}:${{{}}}\"\n".format(ep[0], ep[1], ep[0]))
         f.write("\n\n")
     return
 
 
-def write_modulefile(path, package, version, envset, envprepend, other):
+def write_modulefile(path, package, version, envset, envprepend, prelines, postlines):
     with open(path, "w") as f:
         f.write("#%Module###<-magic cookie #########################\n")
         f.write("##\n")
@@ -294,17 +316,21 @@ def write_modulefile(path, package, version, envset, envprepend, other):
         f.write("  puts stderr \"\"\n")
         f.write("}\n")
         f.write("\n")
-        f.write("conflict desi-{}\n".format(package))
+        for line in prelines:
+            f.write("{}\n".format(line))
+        f.write("\n")
+        if package == "desi":
+            f.write("conflict desi\n")
+        else:
+            f.write("conflict desi-{}\n".format(package))
         f.write("\n")
         for v in envset:
             f.write("setenv {} \"{}\"\n".format(v[0], v[1]))
         f.write("\n")
         for ep in envprepend:
-            key = ep[0]
-            for v in ep[1]:
-                f.write("prepend-path {} \"{}\"\n".format(key, v))
+            f.write("prepend-path {} \"{}\"\n".format(ep[0], ep[1]))
         f.write("\n")
-        for line in other:
+        for line in postlines:
             f.write("{}\n".format(line))
         f.write("\n")
     return
@@ -320,7 +346,7 @@ def write_moduleversion(path, version):
     return
 
 
-def install_packages(pkgs, prefix, moddir, buildver, common=False):
+def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfile, common=False):
 
     depstr = ""
 
@@ -332,7 +358,7 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
         os.chdir(os.path.join(here, pkg["name"]))
 
         envset, envprepend = install_pkg(pkg["name"], pkg["version"], 
-            prefix, common)
+            prefix, desiroot, basisdir, common)
         allset.extend(envset)
         allprepend.extend(envprepend)
 
@@ -343,7 +369,7 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
                 os.makedirs(pkgmod)
             modpath = os.path.join(pkgmod, pkg["version"])
             modver = os.path.join(pkgmod, ".version_{}".format(pkg["version"]))
-            write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [])
+            write_modulefile(modpath, pkg["name"], pkg["version"], envset, envprepend, [], [])
             write_moduleversion(modver, pkg["version"])
 
         depstr = "{}{}".format(depstr, pkg["version"])
@@ -352,7 +378,13 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
     # generated desi version
 
     desiversion = tools.desi_version(buildver, depstr)
-    allset.append( ("DESI_VERSION", desiversion) )
+
+    desivars = [
+        ("DESI_VERSION", desiversion),
+        ("DESI_ROOT", desiroot)
+    ]
+
+    allset.extend(desivars)
 
     # Remove duplicates from the prepended paths
 
@@ -362,18 +394,18 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
             if ap[1] not in uniq[ap[0]]:
                 uniq[ap[0]].append(ap[1])
         else:
-            uniq[ap[0]] = []
-            uniq[ap[0]].append(ap[1])
+            uniq[ap[0]] = [ap[1]]
 
     uniqprepend = []
-    for ap in allprepend:
-        uniqprepend.append( (ap[0], uniq[ap[0]] ) )
+    for k, vals in uniq.items():
+        for v in vals:
+            uniqprepend.append( (k, v) )
 
     # Create a shell file that can be sourced as an alternative to using
     # modulefiles.
 
     setupfile = os.path.join(prefix, "setup.sh")
-    write_setupfile(setupfile, buildver, desiversion, allset, uniqprepend)
+    write_setupfile(setupfile, allset, uniqprepend)
 
     # Create the top-level "desi" modulefile
 
@@ -382,11 +414,17 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
         os.makedirs(desimoddir)
     moddesi = os.path.join(desimoddir, desiversion)
     modver = os.path.join(desimoddir, ".version_{}".format(desiversion))
+
+    deplines = []
+    if initfile is not None:
+        with open(initfile, "r") as f:
+            for line in f:
+                deplines.append(line)
     
     if common:
         # In this case we dump all the environment modifications into
         # the top level module file.    
-        write_modulefile(moddesi, "desi", desiversion, allset, uniqprepend, [])
+        write_modulefile(moddesi, "desi", desiversion, allset, uniqprepend, deplines, [])
     else:
         # Instead, we add lines that load the per-package modulefiles.
         loads = []
@@ -398,8 +436,8 @@ def install_packages(pkgs, prefix, moddir, buildver, common=False):
             loads.append("    module load {}/{}".format(pkg["name"], pkg["version"]))
             loads.append("  }")
             loads.append("}")
-        write_modulefile(moddesi, "desi", desiversion, 
-            [("DESI_VERSION", desiversion)], [], loads)
+        write_modulefile(moddesi, "desi", desiversion, desivars, [], 
+            deplines, loads)
 
     write_moduleversion(modver, desiversion)
 
@@ -418,6 +456,10 @@ parser.add_argument("--prefix", required=True, type=str, default=None,
 parser.add_argument("--desiroot", required=True, type=str, default=None,
     help="The directory to use for the DESI_ROOT environment variable.")
 
+parser.add_argument("--basisdir", required=False, type=str, 
+    default="spectro/templates/basis_templates/v2.3",
+    help="The subdirectory of DESI_ROOT containing the basis template files.")
+
 parser.add_argument("--gitdir", required=False, type=str, default=None,
     help="Directory containing the git clones of DESI packages.  "
     "Defaults to current directory.")
@@ -432,6 +474,10 @@ parser.add_argument("--moduledir", required=False, type=str, default=None,
 parser.add_argument("--single", required=False, type=str, default=None,
     help="Ignore the versions file and just install this single package.")
 
+parser.add_argument("--init", required=False, type=str, default=None,
+    help="Path to a modulefile snippet that initializes the environment.  "
+    "This will be added to the top-level desi modulefile.")
+
 
 args = parser.parse_args()
 
@@ -440,6 +486,12 @@ args = parser.parse_args()
 moddir = args.moduledir
 if moddir is None:
     moddir = os.path.join(args.prefix, "modulefiles")
+
+# Init file
+
+initfile = args.init
+if initfile is not None:
+    initfile = os.path.abspath(initfile)
 
 # Get git version of desibuild
 
@@ -450,6 +502,8 @@ buildver = tools.build_version(scriptdir)
 pkgs = tools.load_versions(args.versions)
 
 # Directory for git clones
+
+here = os.path.abspath(os.getcwd())
 
 gitdir = args.gitdir
 if gitdir is None:
@@ -469,7 +523,7 @@ if args.single is not None:
     pkg = pkgs[args.single]
     os.chdir(pkg["name"])
     envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix, 
-        args.common)
+        args.desiroot, args.basisdir, args.common)
     os.chdir("..")
 
     if not common:
@@ -487,7 +541,8 @@ if args.single is not None:
 
 else:
     # install all packages
-    install_packages(pkgs, args.prefix, moddir, buildver, common=args.common)
+    install_packages(pkgs, args.prefix, moddir, buildver, args.desiroot, 
+        args.basisdir, initfile, common=args.common)
 
 # Back to where we started
 

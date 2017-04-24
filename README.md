@@ -28,7 +28,7 @@ Installation.
 
 ### I Want to Install Everything, but with Custom Versions of Packages
 
-No problem.  You should copy one of the text files in the "versions"
+No problem.  You should copy one of the "versions_*" text files in the "systems"
 directory.  Name it something you like.  Now edit the versions of each package
 that you want to install.  For example, you might start with a file that
 has the latest stable tagged versions of all packages and change one or
@@ -37,41 +37,28 @@ instructions below.
 
 ### I Want to Install Everything, but Using Different Dependencies
 
-First, select / edit the text file of package versions you want.  Now decide
-what commands you need to run inside a module file in order to load all the
-python stack and other dependencies (e.g. CFITSIO, HARP, etc).  Paste those
-commands in a text file.  Look in the modulefiles directory for example 
-initialization commands used at NERSC.  Use this custom module init snippet
-when running desi_setup below.  Now follow the installation instructions.
+By default the DESI packages will be installed using whatever dependencies
+are currently found in your environment at install time.  If you have a 
+complicated set of commands to run to load your dependencies, then you can
+have the top-level "desi" module run those when it is loaded.
+
+Create a text file with the module snippet you want inserted into the top-level
+desi modulefile.  See for example the "systems/init.*" files used at NERSC to
+load the desiconda module, which provides all our dependencies.  Pass the 
+name of your file to the "--init" option to desi_setup.
 
 
 ## Installation
 
 Before installation, you will need to have all the external dependencies
 installed on your system.  You also need to create / use a text file listing
-the git branch/tag of each package.  Since we will be running many git
-commands (when using the desi_source script), I highly recommend setting
-up your ssh keys with a keychain, so that you don't have to type your
-password dozens of times.  For example, at NERSC you can download this:
-
-    http://www.funtoo.org/Keychain
-
-and place the "keychain" shell script in your $PATH somewhere.  Then add
-the lines:
-
-    # start ssh keychain
-    keystart () {
-        eval `keychain --eval --agents ssh id_rsa`
-    }
-
-somewhere in your ~/.bashrc.ext.  Whenever you want to unlock your ssh
-(probably once per session), just do "keystart".
+the git branch/tag of each package.
 
 
 ### Dependencies
 
 Get all the dependencies into your environment before using these tools.
-At NERSC, you can load the "desi-conda" module.  On other systems, you 
+At NERSC, you can load the "desiconda" module.  On other systems, you 
 will need a full python stack as well as some compiled packages (CFITSIO,
 BOOST, LAPACK, mpi4py, HARP).
 
@@ -85,6 +72,10 @@ of the desibuild source tree, but it could be anywhere.  We will use the
     $>  mkdir build
     $>  cd build
     $>  ../desi_source versions.txt
+
+
+  See the "systems/versions_*" files
+for
 
 Where "versions.txt" is the file you have copied / modified that lists the
 packages and their versions to install.  When this finishes, you should
