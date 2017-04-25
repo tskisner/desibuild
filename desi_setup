@@ -121,25 +121,43 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
     elif pkg == "redmonster":
 
-        # We just copy the source tree into the install prefix...
-
-        if os.path.isdir(pkgprefix):
-            shutil.rmtree(pkgprefix)
-        shutil.copytree(".", pkgprefix)
-
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_py = os.path.join(pkgprefix, "python")
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+            "site-packages")
+
+        dir_redtemp = pkgprefix
+        if common:
+            dir_redtemp = os.path.join(pkgprefix, "redmonster")
+
+        if not os.path.isdir(dir_redtemp):
+            os.makedirs(dir_redtemp)
+        if not os.path.isdir(dir_bin):
+            os.makedirs(dir_bin)
+        if not os.path.isdir(dir_pysite):
+            os.makedirs(dir_pysite)
+
+        dir_templates = os.path.join(dir_redtemp, "templates")
 
         envprepend.append( ("PATH", dir_bin) )
-        envprepend.append( ("PYTHONPATH", dir_py) )
-        envset.append( ("REDMONSTER_TEMPLATES_DIR", 
-            os.path.join(pkgprefix, "templates")) )
+        envprepend.append( ("PYTHONPATH", dir_pysite) )
+        envset.append( ("REDMONSTER_TEMPLATES_DIR", dir_templates) )
 
         tools.modify_env(envset, envprepend)
 
+        # install the python package
+
+        com = ["python", "setup.py", "install", "--prefix", pkgprefix]
+        live_report(com, pkg)
+
+        # copy templates
+
+        if os.path.isdir(dir_templates):
+            shutil.rmtree(dir_templates)
+        shutil.copytree("templates", dir_templates)
+
         # compile python modules
 
-        compileall.compile_dir(dir_py, force=True, quiet=1)
+        compileall.compile_dir(dir_pysite, force=True, quiet=1)
 
     elif pkg == "teststand":
 
@@ -453,7 +471,7 @@ parser.add_argument("--versions", required=False, type=str, default=None,
 parser.add_argument("--prefix", required=True, type=str, default=None,
     help="Installation prefix.")
 
-parser.add_argument("--desiroot", required=True, type=str, default=None,
+parser.add_argument("--desiroot", required=False, type=str, default=None,
     help="The directory to use for the DESI_ROOT environment variable.")
 
 parser.add_argument("--basisdir", required=False, type=str, 
@@ -481,8 +499,11 @@ parser.add_argument("--init", required=False, type=str, default=None,
 
 args = parser.parse_args()
 
-if args.single is None and args.version is None:
+if args.single is None and args.versions is None:
     raise RuntimeError("You must specify a versions file if not running in single-package mode.")
+
+if args.single is None and args.desiroot is None:
+    raise RuntimeError("You must specify --desiroot if not running in single-package mode.")
 
 # Module install location
 
@@ -551,7 +572,7 @@ if args.single is not None:
             args.desiroot, args.basisdir, args.common)
         os.chdir("..")
 
-        if not common:
+        if not args.common:
             # every package gets its own modulefile
             pkgmod = os.path.join(moddir, pkg["name"])
             if not os.path.isdir(pkgmod):

@@ -114,8 +114,8 @@ def git_version():
     allbranch, err = sprun(com)
     ver = None
     for b in allbranch:
-        mat = re.match(r"[\*]*\s+(.*)", b)
-        if mat is not None
+        mat = re.match(r"[\*]\s+(.*)", b)
+        if mat is not None:
             br = mat.group(1)
             ver = re.sub(r"work-", "", br)
     return ver
