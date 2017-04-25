@@ -44,7 +44,9 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
     pyver = tools.pyversion()
 
-    envset = [("DESI_{}_VERSION".format(pkg.upper()), version)]
+    upkgname = re.sub(r"-", "_", pkg.upper())
+
+    envset = [ ("DESI_{}_VERSION".format(upkgname), version) ]
     envprepend = []
 
     # package prefix
