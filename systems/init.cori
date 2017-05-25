@@ -1,5 +1,5 @@
 
 if [ module-info mode load ] {
-  module load desiconda/20170414-1.1.2-spectro
+  module load desiconda/20170510-1.1.3-spectro
 }
 
