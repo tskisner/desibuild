@@ -1,0 +1,6 @@
+#!/bin/bash
+
+pkgdir="${PREFIX}/${PKG_NAME}"
+
+rm -rf "${pkgdir}"
+

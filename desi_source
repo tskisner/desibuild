@@ -23,9 +23,11 @@ from desibuild import clr as clr
 
 def gitreport(out, err):
     for line in out:
-        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, 
+            clr.LGRAY, line, clr.ENDC))
     for line in err:
-        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC))
+        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, 
+            clr.LGRAY, line, clr.ENDC))
     return
 
 

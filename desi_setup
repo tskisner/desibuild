@@ -32,12 +32,6 @@ def report(label, out, err):
         print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line, clr.ENDC))
     return
 
-def live_report(com, label):
-    p = sp.Popen(com, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True)
-    for line in p.stdout:
-        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line.splitlines()[0], clr.ENDC))
-    return
-
 
 def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     print("Installing package {}".format(pkg))
@@ -78,7 +72,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         os.environ["SPECEX_PREFIX"] = pkgprefix
         
         com = ["make", "install"]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
         
         del os.environ["SPECEX_PREFIX"]
 
@@ -103,7 +97,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         os.environ["INSTALL"] = dir_bin
         
         com = ["make", "install"]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         del os.environ["INSTALL"]
 
@@ -149,7 +143,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         # install the python package
 
         com = ["python", "setup.py", "install", "--prefix", pkgprefix]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         # copy templates
 
@@ -221,7 +215,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         # install the python package
 
         com = ["python", "setup.py", "install", "--prefix", pkgprefix]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         # compile python modules
 
@@ -245,7 +239,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
             shutil.rmtree("data")
 
         com = [datascript]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         os.chdir(here)
 
@@ -271,7 +265,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         # install the python package
 
         com = ["python", "setup.py", "install", "--prefix", pkgprefix]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         # compile python modules
 
@@ -296,7 +290,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         # install the python package
 
         com = ["python", "setup.py", "install", "--prefix", pkgprefix]
-        live_report(com, pkg)
+        tools.live_report(com, pkg)
 
         # compile python modules
 

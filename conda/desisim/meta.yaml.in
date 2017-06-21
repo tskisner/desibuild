@@ -1,0 +1,41 @@
+package:
+  name: desisim
+  version: @desisim_version@
+
+source:
+  git_url: @desisim_url@
+  git_tag: @desisim_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - fitsio
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desispec @desispec_version@
+    - desitarget @desitarget_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - fitsio
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desispec @desispec_version@
+    - desitarget @desitarget_version@
+
+about:
+  home: https://github.com/desihub/desisim
+  license: BSD
+  summary: DESI simulations

@@ -1,0 +1,33 @@
+package:
+  name: specsim
+  version: @specsim_version@
+
+source:
+  git_url: @specsim_url@
+  git_tag: @specsim_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - speclite
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - speclite
+
+about:
+  home: https://github.com/desihub/specsim
+  license: BSD
+  summary: Quick simulations of spectrograph response.

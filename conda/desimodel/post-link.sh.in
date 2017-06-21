@@ -1,0 +1,14 @@
+#!/bin/bash
+
+pkgdir="${PREFIX}/${PKG_NAME}"
+
+if [ ! -d "${pkgdir}" ]; then
+	mkdir "${pkgdir}"
+fi
+
+pushd "${pkgdir}" > /dev/null
+
+svn export https://desi.lbl.gov/svn/code/desimodel/tags/@VERSION@/data
+
+popd > /dev/null
+

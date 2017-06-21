@@ -1,0 +1,29 @@
+package:
+  name: specter
+  version: @specter_version@
+
+source:
+  git_url: @specter_url@
+  git_tag: @specter_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+
+about:
+  home: https://github.com/desihub/specter
+  license: BSD
+  summary: A toolkit for simulating multi-object spectrographs.

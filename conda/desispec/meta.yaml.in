@@ -1,0 +1,43 @@
+package:
+  name: desispec
+  version: @desispec_version@
+
+source:
+  git_url: @desispec_url@
+  git_tag: @desispec_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - fitsio
+    - healpix
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - specter @specter_version@
+    - specex @specex_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - fitsio
+    - healpix
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - specter @specter_version@
+    - specex @specex_version@
+
+about:
+  home: https://github.com/desihub/desispec
+  license: BSD
+  summary: DESI spectral pipeline.

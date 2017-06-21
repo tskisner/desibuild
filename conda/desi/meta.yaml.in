@@ -1,0 +1,31 @@
+package:
+  name: desi
+  version: @desi_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - specsim @specsim_version@
+    - specter @specter_version@
+    - specex @specex_version@
+    - desispec @desispec_version@
+    - desitarget @desitarget_version@
+    - desisim @desisim_version@
+
+  run:
+    - python >=3.5,<3.6
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - specsim @specsim_version@
+    - specter @specter_version@
+    - specex @specex_version@
+    - desispec @desispec_version@
+    - desitarget @desitarget_version@
+    - desisim @desisim_version@
+
+about:
+  home: https://github.com/desihub
+  license: BSD
+  summary: DESI Metapackage

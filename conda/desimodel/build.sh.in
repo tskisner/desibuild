@@ -1,0 +1,15 @@
+#!/bin/bash
+
+eval ${PYTHON} setup.py install --prefix="${PREFIX}"
+
+# Create activate / deactivate scripts that set / unset DESIMODEL
+
+mkdir -p "${PREFIX}/etc/conda/activate.d"
+mkdir -p "${PREFIX}/etc/conda/deactivate.d"
+
+cp -a "${RECIPE_DIR}/desimodel-env-set.sh" \
+	"${PREFIX}/etc/conda/activate.d/desimodel-env.sh"
+
+cp -a "${RECIPE_DIR}/desimodel-env-unset.sh" \
+	"${PREFIX}/etc/conda/deactivate.d/desimodel-env.sh"
+

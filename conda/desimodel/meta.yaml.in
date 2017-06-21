@@ -1,0 +1,33 @@
+package:
+  name: desimodel
+  version: @desimodel_version@
+
+source:
+  git_url: @desimodel_url@
+  git_tag: @desimodel_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - astropy
+    - healpix
+    - desiutil @desiutil_version@
+    - svn
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - astropy
+    - healpix
+    - desiutil @desiutil_version@
+    - svn
+
+about:
+  home: https://github.com/desihub/desimodel
+  license: BSD
+  summary: Code that reads and processes the desimodel data files.

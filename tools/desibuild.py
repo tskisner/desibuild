@@ -65,6 +65,13 @@ def sprun(com):
     return out.splitlines(), err.splitlines()
 
 
+def live_report(com, label):
+    p = sp.Popen(com, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True)
+    for line in p.stdout:
+        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line.splitlines()[0], clr.ENDC))
+    return
+
+
 def copy_scripts(source, dest):
     scriptmod = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
                 | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP

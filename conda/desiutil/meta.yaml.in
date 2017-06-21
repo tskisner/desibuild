@@ -1,0 +1,31 @@
+package:
+  name: desiutil
+  version: @desiutil_version@
+
+source:
+  git_url: @desiutil_url@
+  git_tag: @desiutil_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - requests
+    - pyyaml
+    - astropy
+    - healpix
+    - matplotlib
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - requests
+    - pyyaml
+    - astropy
+    - healpix
+    - matplotlib
+
+about:
+  home: https://github.com/desihub/desiutil
+  license: BSD
+  summary: General DESI utilities, shell scripts, desiInstall, etc.

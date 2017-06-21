@@ -1,0 +1,47 @@
+package:
+  name: desitarget
+  version: @desitarget_version@
+
+source:
+  git_url: @desitarget_url@
+  git_tag: @desitarget_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - h5py
+    - scikit-learn
+    - fitsio
+    - speclite
+    - healpix
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desispec @desispec_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - h5py
+    - scikit-learn
+    - fitsio
+    - speclite
+    - healpix
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desispec @desispec_version@
+
+about:
+  home: https://github.com/desihub/desitarget
+  license: BSD
+  summary: DESI Targeting

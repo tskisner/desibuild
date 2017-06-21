@@ -1,0 +1,22 @@
+package:
+  name: fiberassign
+  version: @fiberassign_version@
+
+source:
+  git_url: @fiberassign_url@
+  git_tag: @fiberassign_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - cfitsio
+
+  run:
+    - python >=3.5,<3.6
+    - cfitsio
+
+about:
+  home: https://github.com/desihub/fiberassign
+  license: BSD
+  summary: Fiber assignment code for DESI.
+

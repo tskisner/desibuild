@@ -1,0 +1,30 @@
+package:
+  name: specex
+  version: @specex_version@
+
+source:
+  git_url: @specex_url@
+  git_tag: @specex_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - cfitsio
+    - mkl
+    - numpy
+    - boost
+    - harp
+
+  run:
+    - python >=3.5,<3.6
+    - cfitsio
+    - mkl
+    - numpy
+    - boost
+    - harp
+
+about:
+  home: https://github.com/desihub/specex
+  license: BSD
+  summary: SPECtral EXtraction software.
+

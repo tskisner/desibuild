@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export SPECEX_PREFIX="${PREFIX}"
+make install
+
