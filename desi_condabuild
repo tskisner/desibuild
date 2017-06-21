@@ -42,6 +42,7 @@ buildver = tools.build_version(scriptdir)
 p = {}
 p["name"] = "desi"
 p["version"] = buildver
+p["url"] = ""
 pkgs.append(p)
 
 # Conda recipe location

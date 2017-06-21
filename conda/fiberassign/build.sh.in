@@ -1,5 +1,12 @@
 #!/bin/bash
 
-export SPECEX_PREFIX="${PREFIX}"
+export INSTALL="${PREFIX}/bin"
 make install
+
+sitever=$(${PYTHON} --version 2>&1 | awk '{print $2}' | sed -e "s#\(.*\..*\)\..*#\1#")
+
+site="${PREFIX}/lib/python${sitever}/site-packages/fiberassign"
+mkdir -p "${site}"
+
+cp -a ./py/fiberassign/* "${site}"
 
