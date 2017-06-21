@@ -1,0 +1,35 @@
+package:
+  name: redrock
+  version: @redrock_version@
+
+source:
+  git_url: @redrock_url@
+  git_tag: @redrock_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - h5py
+    - astropy
+    - numba=0.28.1
+    - redrock-templates @redrock-templates_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - h5py
+    - astropy
+    - numba=0.28.1
+    - redrock-templates @redrock-templates_version@
+
+about:
+  home: https://github.com/desihub/redrock
+  license: BSD
+  summary: Redshift fitting for spectroperfectionism.

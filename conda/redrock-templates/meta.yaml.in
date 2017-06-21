@@ -1,0 +1,19 @@
+package:
+  name: redrock-templates
+  version: @redrock-templates_version@
+
+source:
+  git_url: @redrock-templates_url@
+  git_tag: @redrock-templates_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+
+  run:
+    - python >=3.5,<3.6
+
+about:
+  home: https://github.com/desihub/redrock-templates
+  license: BSD
+  summary: Template files for redrock.

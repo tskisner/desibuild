@@ -25,10 +25,13 @@ from desibuild import clr as clr
 # Get our options
 
 parser = argparse.ArgumentParser(description="Build conda packages.")
+
 parser.add_argument("--versions", required=True, type=str, default=None,
     help="Path to the versions file.  File format is 3 columns of "
     "<package name> <git URL> <branch/tag name>.")
 
+parser.add_argument("--upload", required=False, action="store_true", 
+    default=False, help="Do not build packages, just upload")
 
 args = parser.parse_args()
 
@@ -45,53 +48,69 @@ p["version"] = buildver
 p["url"] = ""
 pkgs.append(p)
 
-# Conda recipe location
+if args.upload:
+    conda = sp.check_output("which conda", shell=True)
+    condaroot = os.path.dirname(conda)
+    condbld = os.path.join(condaroot, "..", "conda-bld")
 
-condadir = os.path.join(scriptdir, "conda")
+    plat = sp.check_output("conda info | grep platform | awk '{print $3}'", shell=True)
 
-for pkg in pkgs:
-    print("Working on package {}".format(pkg["name"]))
+    platdir = os.path.join(condabld, plat)
 
-    pkgdir = os.path.join(condadir, pkg["name"])
+    for pkg in pkgs:
+        print("Uploading package {}".format(pkg["name"]))
+        tarball = os.path.join(platdir, "{}-{}-0.tar.bz2".format(pkg["name"], pkg["version"]))
+        sp.check_call("anaconda upload {}".format(tarball), shell=True)
 
-    # Process all package input files
+else:
 
-    scriptmod = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-                | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
-                | stat.S_IROTH | stat.S_IXOTH)
+    # Conda recipe location
 
-    inpat = re.compile(r"(.*)\.in")
-    shpat = re.compile(r"(.*)\.sh")
-    purge = []
+    condadir = os.path.join(scriptdir, "conda")
 
-    for root, dirs, files in os.walk(pkgdir, topdown=True):
-        for f in files:
-            mat = inpat.match(f)
-            if mat is not None:
-                filein = os.path.join(pkgdir, f)
-                fileout = os.path.join(pkgdir, mat.group(1))
-                with open(fileout, "w") as output:
-                    with open(filein, "r") as input:
-                        for line in input:
-                            for other in pkgs:
-                                line = re.sub("@{}_version@".format(other["name"]), 
-                                    other["version"], line)
-                                line = re.sub("@{}_url@".format(other["name"]), 
-                                    other["url"], line)
-                            output.write(line)
-                purge.append(fileout)
-                if shpat.match(fileout) is not None:
-                    os.chmod(fileout, scriptmod)
-        break
+    for pkg in pkgs:
+        print("Working on package {}".format(pkg["name"]))
 
-    # Run conda build
+        pkgdir = os.path.join(condadir, pkg["name"])
 
-    com = ["conda", "build", pkgdir]
-    tools.live_report(com, "conda")
+        # Process all package input files
 
-    # Clean up
+        scriptmod = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+                    | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
+                    | stat.S_IROTH | stat.S_IXOTH)
 
-    for f in purge:
-        if os.path.isfile(f):
-            os.remove(f)
+        inpat = re.compile(r"(.*)\.in")
+        shpat = re.compile(r"(.*)\.sh")
+        purge = []
+
+        for root, dirs, files in os.walk(pkgdir, topdown=True):
+            for f in files:
+                mat = inpat.match(f)
+                if mat is not None:
+                    filein = os.path.join(pkgdir, f)
+                    fileout = os.path.join(pkgdir, mat.group(1))
+                    with open(fileout, "w") as output:
+                        with open(filein, "r") as input:
+                            for line in input:
+                                for other in pkgs:
+                                    line = re.sub("@{}_version@".format(other["name"]), 
+                                        other["version"], line)
+                                    line = re.sub("@{}_url@".format(other["name"]), 
+                                        other["url"], line)
+                                output.write(line)
+                    purge.append(fileout)
+                    if shpat.match(fileout) is not None:
+                        os.chmod(fileout, scriptmod)
+            break
+
+        # Run conda build
+
+        com = ["conda", "build", pkgdir]
+        tools.live_report(com, "conda")
+
+        # Clean up
+
+        for f in purge:
+            if os.path.isfile(f):
+                os.remove(f)
 

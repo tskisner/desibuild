@@ -1,6 +1,10 @@
 #!/bin/bash
 
-eval ${PYTHON} setup.py install --prefix="${PREFIX}"
+# Copy files into place
+
+mkdir -p "${PREFIX}/redrock/templates"
+
+cp -a * "${PREFIX}/redrock/templates"
 
 # Create activate / deactivate scripts that set / unset DESIMODEL
 
@@ -8,8 +12,8 @@ mkdir -p "${PREFIX}/etc/conda/activate.d"
 mkdir -p "${PREFIX}/etc/conda/deactivate.d"
 
 cp -a "${RECIPE_DIR}/env-set.sh" \
-	"${PREFIX}/etc/conda/activate.d/desimodel-env.sh"
+	"${PREFIX}/etc/conda/activate.d/redrock-templates-env.sh"
 
 cp -a "${RECIPE_DIR}/env-unset.sh" \
-	"${PREFIX}/etc/conda/deactivate.d/desimodel-env.sh"
+	"${PREFIX}/etc/conda/deactivate.d/redrock-templates-env.sh"
 

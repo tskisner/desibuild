@@ -155,6 +155,27 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         compileall.compile_dir(dir_pysite, force=True, quiet=1)
 
+    elif pkg == "redrock-templates":
+
+        dir_redtemp = pkgprefix
+        if common:
+            dir_redtemp = os.path.join(pkgprefix, "redrock")
+
+        if not os.path.isdir(dir_redtemp):
+            os.makedirs(dir_redtemp)
+
+        dir_templates = os.path.join(dir_redtemp, "templates")
+
+        envset.append( ("RR_TEMPLATE_DIR", dir_templates) )
+
+        tools.modify_env(envset, envprepend)
+
+        # copy templates
+
+        if os.path.isdir(dir_templates):
+            shutil.rmtree(dir_templates)
+        shutil.copytree(".", dir_templates)
+
     elif pkg == "teststand":
 
         dir_bin = os.path.join(pkgprefix, "bin")

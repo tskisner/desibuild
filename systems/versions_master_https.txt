@@ -1,12 +1,13 @@
 desiutil            https://github.com/desihub/desiutil.git             master
-desimodel           https://github.com/desihub/desimodel.git            master
+desimodel           https://github.com/desihub/desimodel.git	        master
 specsim             https://github.com/desihub/specsim.git              master
 specter             https://github.com/desihub/specter.git              master
 specex              https://github.com/desihub/specex.git               master
-redrock             https://github.com/desihub/redrock.git              master
 redrock-templates   https://github.com/desihub/redrock-templates.git    master
+redrock             https://github.com/desihub/redrock.git              master
 desispec            https://github.com/desihub/desispec.git             master
-desitarget          https://github.com/desihub/desitarget.git           master
+desitarget          https://github.com/desihub/desitarget.git	        master
 desisim             https://github.com/desihub/desisim.git              master
 fiberassign         https://github.com/desihub/fiberassign.git          master
-teststand           https://github.com/desihub/teststand.git            master
+desisurvey          https://github.com/desihub/desisurvey.git           master
+surveysim           https://github.com/desihub/surveysim.git            master

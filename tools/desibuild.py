@@ -106,7 +106,9 @@ def modify_env(envset, envprepend):
     for t in envset:
         os.environ[t[0]] = t[1]
     for t in envprepend:
-        cur = os.environ[t[0]]
+        cur = ""
+        if t[0] in os.environ:
+           cur = os.environ[t[0]]
         new = None
         if cur != "":
             new = "{}:{}".format(t[1], cur)
