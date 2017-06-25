@@ -220,3 +220,10 @@ versions.
 If you want to build a docker image containing the DESI tools, see the 
 README in the "systems" sub-directory.
 
+## Conda Packages
+
+If you want to build conda packages with the included "desi_condabuild"
+script, you should be familiar with the conda-build process and also build
+in an environment (a dedicated container) that is compatible with the conda
+packages built by the desiconda tools.
+
