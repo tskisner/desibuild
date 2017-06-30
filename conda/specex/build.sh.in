@@ -3,3 +3,14 @@
 export SPECEX_PREFIX="${PREFIX}"
 make install
 
+# Create activate / deactivate scripts that set / unset LIBSPECEX
+
+mkdir -p "${PREFIX}/etc/conda/activate.d"
+mkdir -p "${PREFIX}/etc/conda/deactivate.d"
+
+cp -a "${RECIPE_DIR}/env-set.sh" \
+        "${PREFIX}/etc/conda/activate.d/specex-env.sh"
+
+cp -a "${RECIPE_DIR}/env-unset.sh" \
+        "${PREFIX}/etc/conda/deactivate.d/specex-env.sh"
+

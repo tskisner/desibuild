@@ -15,7 +15,7 @@ requirements:
     - scipy
     - h5py
     - astropy
-    - numba=0.28.1
+    - numba 0.28.1
     - redrock-templates @redrock-templates_version@
 
   run:
@@ -26,7 +26,7 @@ requirements:
     - scipy
     - h5py
     - astropy
-    - numba=0.28.1
+    - numba 0.28.1
     - redrock-templates @redrock-templates_version@
 
 about:
