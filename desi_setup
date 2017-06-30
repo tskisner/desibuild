@@ -65,6 +65,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         envprepend.append( ("CPATH", dir_include) )
         envprepend.append( ("LIBRARY_PATH", dir_lib) )
         envprepend.append( ("LD_LIBRARY_PATH", dir_lib) )
+        envprepend.append( ("DYLD_LIBRARY_PATH", dir_lib) )
         envset.append( ("HARP_PLUGIN_PATH", dir_lib) )
 
         tools.modify_env(envset, envprepend)
