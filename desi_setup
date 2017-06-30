@@ -65,8 +65,8 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         envprepend.append( ("CPATH", dir_include) )
         envprepend.append( ("LIBRARY_PATH", dir_lib) )
         envprepend.append( ("LD_LIBRARY_PATH", dir_lib) )
-        envprepend.append( ("DYLD_LIBRARY_PATH", dir_lib) )
         envset.append( ("HARP_PLUGIN_PATH", dir_lib) )
+        envset.append( ("LIBSPECEX_DIR", dir_lib) )
 
         tools.modify_env(envset, envprepend)
 
@@ -93,14 +93,17 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         tools.modify_env(envset, envprepend)
 
-        # install the compiled tools
+        # Install the compiled tools.  Use the harpconfig tool
+        # to get the compiler flags on this system.
 
         os.environ["INSTALL"] = dir_bin
+        os.environ["PLATFORM"] = "harpconfig"
         
         com = ["make", "install"]
         tools.live_report(com, pkg)
 
         del os.environ["INSTALL"]
+        del os.environ["PLATFORM"]
 
         # copy scripts and python modules
 
