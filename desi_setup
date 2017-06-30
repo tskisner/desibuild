@@ -257,10 +257,11 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         os.chdir(dir_model)
         if os.path.isdir("data"):
-            shutil.rmtree("data")
-
-        com = [datascript]
-        tools.live_report(com, pkg)
+            print("  WARNING: desimodel data exists in installation prefix, skipping download")
+            #shutil.rmtree("data")
+        else:
+            com = [datascript]
+            tools.live_report(com, pkg)
 
         os.chdir(here)
 
