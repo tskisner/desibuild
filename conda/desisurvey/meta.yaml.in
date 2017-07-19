@@ -1,0 +1,39 @@
+package:
+  name: desisurvey
+  version: @desisurvey_version@
+
+source:
+  git_url: @desisurvey_url@
+  git_tag: @desisurvey_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - pyephem
+    - pytz
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - scipy
+    - astropy
+    - matplotlib
+    - pyephem
+    - pytz
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+
+about:
+  home: https://github.com/desihub/desisurvey
+  license: BSD
+  summary: Code for desi survey planning and implementation

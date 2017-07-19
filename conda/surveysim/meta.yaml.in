@@ -1,0 +1,35 @@
+package:
+  name: surveysim
+  version: @surveysim_version@
+
+source:
+  git_url: @surveysim_url@
+  git_tag: @surveysim_version@
+
+requirements:
+  build:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - astropy
+    - matplotlib
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desisurvey @desisurvey_version@
+
+  run:
+    - python >=3.5,<3.6
+    - setuptools
+    - pyyaml
+    - numpy
+    - astropy
+    - matplotlib
+    - desiutil @desiutil_version@
+    - desimodel @desimodel_version@
+    - desisurvey @desisurvey_version@
+
+about:
+  home: https://github.com/desihub/surveysim
+  license: BSD
+  summary: Prototype simulator for the DESI survey.

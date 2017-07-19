@@ -10,9 +10,14 @@ requirements:
     - specsim @specsim_version@
     - specter @specter_version@
     - specex @specex_version@
+    - redrock-templates @redrock-templates_version@
+    - redrock @redrock_version@
     - desispec @desispec_version@
     - desitarget @desitarget_version@
     - desisim @desisim_version@
+    - fiberassign @fiberassign_version@
+    - desisurvey @desisurvey_version@
+    - surveysim @surveysim_version@
 
   run:
     - python >=3.5,<3.6
@@ -21,9 +26,14 @@ requirements:
     - specsim @specsim_version@
     - specter @specter_version@
     - specex @specex_version@
+    - redrock-templates @redrock-templates_version@
+    - redrock @redrock_version@
     - desispec @desispec_version@
     - desitarget @desitarget_version@
     - desisim @desisim_version@
+    - fiberassign @fiberassign_version@
+    - desisurvey @desisurvey_version@
+    - surveysim @surveysim_version@
 
 about:
   home: https://github.com/desihub
