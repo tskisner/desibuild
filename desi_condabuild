@@ -49,13 +49,13 @@ p["url"] = ""
 pkgs.append(p)
 
 if args.upload:
-    conda = sp.check_output("which conda", shell=True)
-    condaroot = os.path.dirname(conda)
-    condbld = os.path.join(condaroot, "..", "conda-bld")
+    conda = sp.check_output("which conda", shell=True, universal_newlines=True)
+    condaroot = os.path.dirname(conda.rstrip())
+    condabld = os.path.join(condaroot, "..", "conda-bld")
 
-    plat = sp.check_output("conda info | grep platform | awk '{print $3}'", shell=True)
+    plat = sp.check_output("conda info | grep platform | awk '{print $3}'", shell=True, universal_newlines=True)
 
-    platdir = os.path.join(condabld, plat)
+    platdir = os.path.join(condabld, plat.rstrip())
 
     for pkg in pkgs:
         print("Uploading package {}".format(pkg["name"]))
