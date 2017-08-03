@@ -233,8 +233,8 @@ Sometimes it is useful to install all DESI packages to a single prefix, and
 just have that one location in your environment.  This is particularly nice
 when doing development and also when installing to a fixed docker image.
 
-Simply pass the "--common" option to desi_setup.  The top-level setup.sh script
-and the "desi" modulefile will be created, but per-package module files
+Simply pass the "--common" option to desi_setup.  The top-level setup.sh
+script and the "desi" modulefile will be created, but per-package module files
 obviously are redundant in this case.
 
 
@@ -292,8 +292,9 @@ versions.
 
 ## Software Deployment Tools
 
-These tools focus on a different problem.  Imagine you have a set of tagged versions of all packages, and you want to deploy them in a way
-that they can be used by many people.
+These tools focus on a different problem.  Imagine you have a set of tagged
+versions of all packages, and you want to deploy them in a way that they can
+be used by many people.
 
 
 ### Docker Images
@@ -307,4 +308,22 @@ If you want to build conda packages with the included "desi_condabuild"
 script, you should be familiar with the conda-build process and also build
 in an environment (a dedicated container) that is compatible with the conda
 packages built by the desiconda tools.
+
+For example, assume that we have a docker container built with the desiconda
+"make condabld" target.  That image is based on Cent OS 7 plus a set of conda
+packages.  desiconda includes a helper script to run this container while
+mounting a source tree.  Assume our desibuild git checkout is in 
+/home/user/git/desibuild.  We can use that script like this:
+
+    $> condadocker.sh tskisner/c7build:latest /home/user/git/desibuild
+
+Once in the container, we will be in a home directory with a "work" directory
+mounted to the path we gave above.  Run the setup.py script in this home
+directory, and then go into the work directory.  Now do:
+
+    $> ./desi_condabuild --versions versions_stable_https.txt
+
+This will build all the desi packages.  There is another option to upload
+those newly built packages.
+
 
