@@ -4,13 +4,13 @@ For instructions on how to simply use conda packages built with
 desibuild, see the next section.  There are two different use cases 
 that desibuild addresses:
 
-    1.  A DESI developer is working on multiple packages and
-        is frustrated dealing with a dozen git repos.  desibuild
-        makes it easy to checkout specific versions of all repos
-        and build and install them.
+1.  A DESI developer is working on multiple packages and
+    is frustrated dealing with a dozen git repos.  desibuild
+    makes it easy to checkout specific versions of all repos
+    and build and install them.
 
-    2.  A DESI software maintainer wants to deploy conda packages
-        and / or docker containers for use by DESI users.
+2.  A DESI software maintainer wants to deploy conda packages
+    and / or docker containers for use by DESI users.
 
 ## User Documentation
 
@@ -18,37 +18,37 @@ If you are a user that simply wants to make use of conda packages
 built by others, first read the warnings below before following these
 steps:
 
-    1.  Install Miniconda3 or a full Anaconda3 stack::
+1.  Install Miniconda3 or a full Anaconda3 stack::
 
-        https://conda.io/miniconda.html
-        https://www.continuum.io/downloads
+    https://conda.io/miniconda.html
+    https://www.continuum.io/downloads
 
-    2.  Add the necessary channels to the top of the priority list::
+2.  Add the necessary channels to the top of the priority list::
 
-            $> conda config --prepend channels astropy
-            $> conda config --prepend channels tskisner
+        $> conda config --prepend channels astropy
+        $> conda config --prepend channels tskisner
 
-        verify the channel order::
+    verify the channel order::
 
-            $> cat ~/.condarc
-            channels:
-              - tskisner
-              - astropy
-              - defaults
+        $> cat ~/.condarc
+        channels:
+          - tskisner
+          - astropy
+          - defaults
 
-    3.  Force use of python 3.5.  See warning below::
+3.  Force use of python 3.5.  See warning below::
 
-        $> conda install python=3.5
+    $> conda install python=3.5
 
-    4.  Install desi packages::
+4.  Install desi packages::
 
-        $> conda install desi
+    $> conda install desi
 
-    5.  Make sure to actually activate the conda root environment, 
-        since that sets $DESIMODEL and eventually other environment
-        variables::
+5.  Make sure to actually activate the conda root environment, 
+    since that sets $DESIMODEL and eventually other environment
+    variables::
 
-            $> source activate
+        $> source activate
 
 ### Caveats / Warnings
 
