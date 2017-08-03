@@ -18,17 +18,17 @@ If you are a user that simply wants to make use of conda packages
 built by others, first read the warnings below before following these
 steps:
 
-1.  Install Miniconda3 or a full Anaconda3 stack::
+1.  Install Miniconda3 or a full Anaconda3 stack:
 
     https://conda.io/miniconda.html
     https://www.continuum.io/downloads
 
-2.  Add the necessary channels to the top of the priority list::
+2.  Add the necessary channels to the top of the priority list:
 
         $> conda config --prepend channels astropy
         $> conda config --prepend channels tskisner
 
-    verify the channel order::
+    verify the channel order:
 
         $> cat ~/.condarc
         channels:
@@ -36,17 +36,17 @@ steps:
           - astropy
           - defaults
 
-3.  Force use of python 3.5.  See warning below::
+3.  Force use of python 3.5.  See warning below:
 
-    $> conda install python=3.5
+        $> conda install python=3.5
 
-4.  Install desi packages::
+4.  Install desi packages:
 
-    $> conda install desi
+        $> conda install desi
 
 5.  Make sure to actually activate the conda root environment, 
     since that sets $DESIMODEL and eventually other environment
-    variables::
+    variables:
 
         $> source activate
 
@@ -54,23 +54,23 @@ steps:
 
 **Beware**:
 
-    - Installing these packages will download ~200MB of desimodel 
-      data files (don't tether to your phone when doing this).
+- Installing these packages will download ~200MB of desimodel 
+  data files (don't tether to your phone when doing this).
 
-    - If you have an existing python3 anaconda installation, the 
-      default python version is likely 3.6.  The DESI installation at 
-      NERSC and these packages are using python 3.5.  We'll move to 3.6 
-      soon after some more testing.  Installing these packages will 
-      force you to use python 3.5.  You should create a new conda 
-      environment for testing if you want to be sure not to break 
-      something you already have.
+- If you have an existing python3 anaconda installation, the 
+  default python version is likely 3.6.  The DESI installation at 
+  NERSC and these packages are using python 3.5.  We'll move to 3.6 
+  soon after some more testing.  Installing these packages will 
+  force you to use python 3.5.  You should create a new conda 
+  environment for testing if you want to be sure not to break 
+  something you already have.
 
-    - (OS X) These packages will only work on the most recent version of 
-      OS X, since that is the version on my build machine.
+- (OS X) These packages will only work on the most recent version of 
+  OS X, since that is the version on my build machine.
 
-    - (Linux) These packages were built inside a CentOS-7 container, so
-      should work on CentOS / RHEL 7 and newer, and should work on 
-      Ubuntu 16.04 and newer (perhaps older depending on glibc versions).
+- (Linux) These packages were built inside a CentOS-7 container, so
+  should work on CentOS / RHEL 7 and newer, and should work on 
+  Ubuntu 16.04 and newer (perhaps older depending on glibc versions).
 
 
 ## Individual Developer Tools
