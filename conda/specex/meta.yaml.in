@@ -2,6 +2,9 @@ package:
   name: specex
   version: @specex_version@
 
+build:
+  number: 0
+
 source:
   git_url: @specex_url@
   git_tag: @specex_version@

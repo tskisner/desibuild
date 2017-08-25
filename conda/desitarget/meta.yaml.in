@@ -2,6 +2,9 @@ package:
   name: desitarget
   version: @desitarget_version@
 
+build:
+  number: 0
+
 source:
   git_url: @desitarget_url@
   git_tag: @desitarget_version@

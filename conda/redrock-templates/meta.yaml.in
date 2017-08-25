@@ -2,6 +2,9 @@ package:
   name: redrock-templates
   version: @redrock-templates_version@
 
+build:
+  number: 0
+
 source:
   git_url: @redrock-templates_url@
   git_tag: @redrock-templates_version@

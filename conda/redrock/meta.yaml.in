@@ -2,6 +2,9 @@ package:
   name: redrock
   version: @redrock_version@
 
+build:
+  number: 0
+
 source:
   git_url: @redrock_url@
   git_tag: @redrock_version@

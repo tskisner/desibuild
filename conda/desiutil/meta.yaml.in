@@ -2,6 +2,9 @@ package:
   name: desiutil
   version: @desiutil_version@
 
+build:
+  number: 0
+
 source:
   git_url: @desiutil_url@
   git_tag: @desiutil_version@

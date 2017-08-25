@@ -2,6 +2,9 @@ package:
   name: desisurvey
   version: @desisurvey_version@
 
+build:
+  number: 0
+
 source:
   git_url: @desisurvey_url@
   git_tag: @desisurvey_version@

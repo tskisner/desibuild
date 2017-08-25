@@ -2,6 +2,9 @@ package:
   name: fiberassign
   version: @fiberassign_version@
 
+build:
+  number: 0
+
 source:
   git_url: @fiberassign_url@
   git_tag: @fiberassign_version@

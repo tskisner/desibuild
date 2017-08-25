@@ -2,6 +2,9 @@ package:
   name: surveysim
   version: @surveysim_version@
 
+build:
+  number: 0
+
 source:
   git_url: @surveysim_url@
   git_tag: @surveysim_version@

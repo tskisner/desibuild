@@ -2,6 +2,9 @@ package:
   name: specsim
   version: @specsim_version@
 
+build:
+  number: 0
+
 source:
   git_url: @specsim_url@
   git_tag: @specsim_version@

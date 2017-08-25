@@ -2,6 +2,9 @@ package:
   name: desimodel
   version: @desimodel_version@
 
+build:
+  number: 0
+
 source:
   git_url: @desimodel_url@
   git_tag: @desimodel_version@

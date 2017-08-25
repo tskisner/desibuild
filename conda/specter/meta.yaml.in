@@ -2,6 +2,9 @@ package:
   name: specter
   version: @specter_version@
 
+build:
+  number: 0
+
 source:
   git_url: @specter_url@
   git_tag: @specter_version@
