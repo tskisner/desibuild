@@ -178,7 +178,8 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         if os.path.isdir(dir_templates):
             shutil.rmtree(dir_templates)
-        shutil.copytree(".", dir_templates)
+        shutil.copytree(".", dir_templates, 
+            ignore=shutil.ignore_patterns(".git"))
 
     elif pkg == "teststand":
 
