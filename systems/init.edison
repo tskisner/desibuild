@@ -1,4 +1,7 @@
 
+module use /global/common/software/desi/edison/desiconda/20170920-1.2.0-spec/modulefiles
+
 if [ module-info mode load ] {
-  module load desiconda/20170510-1.1.3-spectro
+  module load desiconda
 }
+
