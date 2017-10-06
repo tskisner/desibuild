@@ -1,0 +1,7 @@
+
+module use /opt/desi/desiconda/20171006/modulefiles
+
+if [ module-info mode load ] {
+  module load desiconda
+}
+
