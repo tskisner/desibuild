@@ -1,7 +1,7 @@
 # Scripts and Tools for Installation of DESI Software
 
-For instructions on how to simply use conda packages built with 
-desibuild, see the next section.  There are two different use cases 
+For instructions on how to simply use conda packages built with
+desibuild, see the next section.  There are two different use cases
 that desibuild addresses:
 
 1.  A DESI developer is working on multiple packages and
@@ -11,66 +11,6 @@ that desibuild addresses:
 
 2.  A DESI software maintainer wants to deploy conda packages
     and / or docker containers for use by DESI users.
-
-## User Documentation
-
-If you are a user that simply wants to make use of conda packages
-built by others, first read the warnings below before following these
-steps:
-
-1.  Install Miniconda3 or a full Anaconda3 stack:
-
-    https://conda.io/miniconda.html
-    https://www.continuum.io/downloads
-
-2.  Add the necessary channels to the top of the priority list:
-
-        $> conda config --prepend channels astropy
-        $> conda config --prepend channels tskisner
-
-    verify the channel order:
-
-        $> cat ~/.condarc
-        channels:
-          - tskisner
-          - astropy
-          - defaults
-
-3.  Force use of python 3.5.  See warning below:
-
-        $> conda install python=3.5
-
-4.  Install desi packages:
-
-        $> conda install desi
-
-5.  Make sure to actually activate the conda root environment, 
-    since that sets $DESIMODEL and eventually other environment
-    variables:
-
-        $> source activate
-
-### Caveats / Warnings
-
-**Beware**:
-
-- Installing these packages will download ~200MB of desimodel 
-  data files (don't tether to your phone when doing this).
-
-- If you have an existing python3 anaconda installation, the 
-  default python version is likely 3.6.  The DESI installation at 
-  NERSC and these packages are using python 3.5.  We'll move to 3.6 
-  soon after some more testing.  Installing these packages will 
-  force you to use python 3.5.  You should create a new conda 
-  environment for testing if you want to be sure not to break 
-  something you already have.
-
-- (OS X) These packages will only work on the most recent version of 
-  OS X, since that is the version on my build machine.
-
-- (Linux) These packages were built inside a CentOS-7 container, so
-  should work on CentOS / RHEL 7 and newer, and should work on 
-  Ubuntu 16.04 and newer (perhaps older depending on glibc versions).
 
 
 ## Individual Developer Tools
@@ -88,7 +28,7 @@ detailed options.
 Assume that we have a shell command "desideps" that activates a conda
 environment and loads the compiled DESI dependencies into our environment.
 Also assume that we have a local copy of all the DESI auxiliary files (i.e.
-the needed things found in $DESI_ROOT) in ~/desi.  We want to install the 
+the needed things found in $DESI_ROOT) in ~/desi.  We want to install the
 DESI tools to ~/software/desi, and we don't want to deal with modulefiles:
 
     $>  desideps
@@ -146,7 +86,7 @@ the git branch/tag of each package.
 #### Dependencies
 
 Get all the dependencies into your environment before using these tools.
-At NERSC, you can load the "desiconda" module.  On other systems, you 
+At NERSC, you can load the "desiconda" module.  On other systems, you
 will need a full python stack as well as some compiled packages (CFITSIO,
 BOOST, LAPACK, mpi4py, HARP).
 
@@ -154,7 +94,7 @@ BOOST, LAPACK, mpi4py, HARP).
 #### Get the Source
 
 We need to decide where to put the git source trees for all the DESI
-packages.  The default is to use the current working directory.  For this 
+packages.  The default is to use the current working directory.  For this
 example, we'll run from a top-level directory that contains the desibuild
 git clone.  We'll put all the source trees into a directory "desi_repos":
 
@@ -164,15 +104,15 @@ git clone.  We'll put all the source trees into a directory "desi_repos":
 
 This will create the directory passed in the "--gitdir" option and check out
 all the desi git repos into that location.  The versions file contains the
-list of packages, the git URL to use, and the git branch/tag to use.  When 
-this finishes, you should have a git clone of every repo, and the working 
-state inside each clone should be set to a local checkout of the specified 
+list of packages, the git URL to use, and the git branch/tag to use.  When
+this finishes, you should have a git clone of every repo, and the working
+state inside each clone should be set to a local checkout of the specified
 branch/tag.
 
 **NOTE:**  At this point you can go into those git clones and make new
 branches, etc.  Whatever branch is checked out in each package is the one
 that will be installed.  If you are working on multiple packages, just run
-desi_source once and then go create / checkout all the branches you need 
+desi_source once and then go create / checkout all the branches you need
 across multiple packages.
 
 
@@ -180,28 +120,28 @@ across multiple packages.
 
 Decide where you want to install things.  At NERSC, you should put everything
 in your ${SCRATCH} directory somewhere for performance.  You can also install
-software in two different configurations.  The default option installs all 
-packages to versioned directories and creates modulefiles and a shell file to 
-load these into your environment.  Alternatively, you can install all 
+software in two different configurations.  The default option installs all
+packages to versioned directories and creates modulefiles and a shell file to
+load these into your environment.  Alternatively, you can install all
 packages to the same directory, overwriting any previous versions that exist.
 This single-directory mode is useful for development versions of the software
-or for installing into docker containers where only one version will be 
+or for installing into docker containers where only one version will be
 present.
 
-If you are going to be using modules to load the installed software, 
+If you are going to be using modules to load the installed software,
 determine any module commands needed to set up your dependencies.  Place
-those commands into a small text file.  For NERSC systems, you should use one 
-of the examples in the "systems/init.*" files unless you know what you are 
-doing.  On a personal system or other HPC center, ensure that you know what 
+those commands into a small text file.  For NERSC systems, you should use one
+of the examples in the "systems/init.*" files unless you know what you are
+doing.  On a personal system or other HPC center, ensure that you know what
 module commands are needed to get the python stack and other dependencies into
 your environment.
 
 
 #### Installing to Per-Package Directories
 
-This is the default, and versioned per-package subdirectories will be created 
-underneath the prefix location.  This command will use the *current state* 
-of all the git clones.  So if you made a local branch after getting the 
+This is the default, and versioned per-package subdirectories will be created
+underneath the prefix location.  This command will use the *current state*
+of all the git clones.  So if you made a local branch after getting the
 source with "desi_source", then that is what will be installed.  For this
 example, assume we are installing in our scratch space on cori.nersc.gov:
 
@@ -240,9 +180,9 @@ obviously are redundant in this case.
 
 #### Install a Single Package
 
-Imagine you have already installed all the packages you want, but now want 
-to install an alternate version (like master) of a single package.  In this 
-case you can use desi_setup in "single package mode".  First load your 
+Imagine you have already installed all the packages you want, but now want
+to install an alternate version (like master) of a single package.  In this
+case you can use desi_setup in "single package mode".  First load your
 previous module stack to make sure any dependencies are loaded:
 
     $>  module load desi
@@ -286,7 +226,7 @@ versions:
     --prefix ${SCRATCH}/software/desi \
     --gitdir ./desi_repos
 
-Now running "module avail" should reflect the change in the default module 
+Now running "module avail" should reflect the change in the default module
 versions.
 
 
@@ -299,7 +239,7 @@ be used by many people.
 
 ### Docker Images
 
-If you want to build a docker image containing the DESI tools, see the 
+If you want to build a docker image containing the DESI tools, see the
 README in the "systems" sub-directory.
 
 ### Conda Packages
@@ -312,7 +252,7 @@ packages built by the desiconda tools.
 For example, assume that we have a docker container built with the desiconda
 "make condabld" target.  That image is based on Cent OS 7 plus a set of conda
 packages.  desiconda includes a helper script to run this container while
-mounting a source tree.  Assume our desibuild git checkout is in 
+mounting a source tree.  Assume our desibuild git checkout is in
 /home/user/git/desibuild.  We can use that script like this:
 
     $> condadocker.sh tskisner/c7build:latest /home/user/git/desibuild
@@ -327,3 +267,65 @@ This will build all the desi packages.  There is another option to upload
 those newly built packages.
 
 
+## User Documentation (BEWARE- OUT OF DATE)
+
+**WARNING: this was a fragile experiment in building conda packages.  A more
+robust solution likely requires use of conda-forge.**
+
+If you are a user that simply wants to make use of conda packages
+built by others, first read the warnings below before following these
+steps:
+
+1.  Install Miniconda3 or a full Anaconda3 stack:
+
+    https://conda.io/miniconda.html
+    https://www.continuum.io/downloads
+
+2.  Add the necessary channels to the top of the priority list:
+
+        $> conda config --prepend channels astropy
+        $> conda config --prepend channels tskisner
+
+    verify the channel order:
+
+        $> cat ~/.condarc
+        channels:
+          - tskisner
+          - astropy
+          - defaults
+
+3.  Force use of python 3.5.  See warning below:
+
+        $> conda install python=3.5
+
+4.  Install desi packages:
+
+        $> conda install desi
+
+5.  Make sure to actually activate the conda root environment,
+    since that sets $DESIMODEL and eventually other environment
+    variables:
+
+        $> source activate
+
+### Caveats / Warnings
+
+**Beware**:
+
+- Installing these packages will download ~200MB of desimodel
+  data files (don't tether to your phone when doing this).
+
+- If you have an existing python3 anaconda installation, the
+  default python version is likely 3.6.  The DESI installation at
+  NERSC and these packages are using python 3.5.  We'll move to 3.6
+  soon after some more testing.  Installing these packages will
+  force you to use python 3.5.  You should create a new conda
+  environment for testing if you want to be sure not to break
+  something you already have.
+
+- (OS X) These packages will only work on the most recent version of
+  OS X, since that is the version on my build machine.
+
+- (Linux) These packages were built inside a CentOS-7 container, so
+  should work on CentOS / RHEL 7 and newer, and should work on
+  Ubuntu 16.04 and newer (perhaps older depending on glibc versions).
