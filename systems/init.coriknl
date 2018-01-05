@@ -1,7 +1,0 @@
-
-module use /global/common/software/desi/coriknl/desiconda/20170920-1.2.0-spec/modulefiles
-
-if [ module-info mode load ] {
-  module load desiconda
-}
-

@@ -1,7 +1,6 @@
 
-module use /global/common/software/desi/edison/desiconda/20170920-1.2.0-spec/modulefiles
+module use /global/common/software/desi/edison/desiconda/20180102-1.2.2-spec/modulefiles
 
 if [ module-info mode load ] {
   module load desiconda
 }
-
