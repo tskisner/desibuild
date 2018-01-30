@@ -1,5 +1,5 @@
 
-module use /global/common/software/desi/edison/desiconda/20180130-1.2.4-spec/modulefiles
+module use /global/common/software/desi/cori/desiconda/20180130-1.2.4-spec/modulefiles
 
 if [ module-info mode load ] {
   module load desiconda
