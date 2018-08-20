@@ -97,7 +97,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         # to get the compiler flags on this system.
 
         os.environ["INSTALL"] = dir_bin
-        os.environ["PLATFORM"] = "harpconfig"
+        os.environ["PLATFORM"] = "nersc_desiconda"
         
         com = ["make", "install"]
         tools.live_report(com, pkg)
