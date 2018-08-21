@@ -33,7 +33,7 @@ def report(label, out, err):
     return
 
 
-def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
+def install_pkg(pkg, version, prefix, common=False):
     print("Installing package {}".format(pkg))
 
     pyver = tools.pyversion()
@@ -285,7 +285,6 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         envprepend.append( ("PATH", dir_bin) )
         envprepend.append( ("PYTHONPATH", dir_pysite) )
-        envset.append( ("DESI_BASIS_TEMPLATES", os.path.join(desiroot, basisdir)) )
 
         tools.modify_env(envset, envprepend)
 
@@ -387,7 +386,7 @@ def write_moduleversion(path, version):
     return
 
 
-def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfile, common=False):
+def install_packages(pkgs, prefix, moddir, buildver, initfile, common=False):
 
     depstr = ""
 
@@ -399,7 +398,7 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
         os.chdir(os.path.join(here, pkg["name"]))
 
         envset, envprepend = install_pkg(pkg["name"], pkg["version"],
-            prefix, desiroot, basisdir, common)
+            prefix, common)
         allset.extend(envset)
         allprepend.extend(envprepend)
 
@@ -422,7 +421,6 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
 
     desivars = [
         ("DESI_VERSION", desiversion),
-        ("DESI_ROOT", desiroot)
     ]
 
     allset.extend(desivars)
@@ -494,13 +492,6 @@ parser.add_argument("--versions", required=False, type=str, default=None,
 parser.add_argument("--prefix", required=True, type=str, default=None,
     help="Installation prefix.")
 
-parser.add_argument("--desiroot", required=False, type=str, default=None,
-    help="The directory to use for the DESI_ROOT environment variable.")
-
-parser.add_argument("--basisdir", required=False, type=str,
-    default="spectro/templates/basis_templates/v2.3",
-    help="The subdirectory of DESI_ROOT containing the basis template files.")
-
 parser.add_argument("--gitdir", required=False, type=str, default=None,
     help="Directory containing the git clones of DESI packages.  "
     "Defaults to current directory.")
@@ -524,9 +515,6 @@ args = parser.parse_args()
 
 if args.single is None and args.versions is None:
     raise RuntimeError("You must specify a versions file if not running in single-package mode.")
-
-if args.single is None and args.desiroot is None:
-    raise RuntimeError("You must specify --desiroot if not running in single-package mode.")
 
 # Module install location
 
@@ -591,8 +579,8 @@ if args.single is not None:
         if pkg["name"] != args.single:
             continue
         os.chdir(pkg["name"])
-        envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix,
-            args.desiroot, args.basisdir, args.common)
+        envset, envprepend = install_pkg(pkg["name"], pkg["version"],
+                                         args.prefix, args.common)
         os.chdir("..")
 
         if not args.common:
@@ -610,8 +598,8 @@ if args.single is not None:
 
 else:
     # install all packages
-    install_packages(pkgs, args.prefix, moddir, buildver, args.desiroot,
-        args.basisdir, initfile, common=args.common)
+    install_packages(pkgs, args.prefix, moddir, buildver, initfile,
+                     common=args.common)
 
 # Back to where we started
 
