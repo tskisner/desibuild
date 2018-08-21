@@ -99,6 +99,9 @@ def install_pkg(pkg, version, prefix, common=False):
         os.environ["INSTALL"] = dir_bin
         os.environ["PLATFORM"] = "nersc_desiconda"
 
+        com = ["make"]
+        tools.live_report(com, pkg)
+
         com = ["make", "install"]
         tools.live_report(com, pkg)
 
