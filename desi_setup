@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import (absolute_import, division, print_function, 
+from __future__ import (absolute_import, division, print_function,
     unicode_literals)
 
 import sys
@@ -49,7 +49,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         pkgprefix = os.path.join(prefix, pkg, version)
 
     if pkg == "specex":
-        
+
         dir_bin = os.path.join(pkgprefix, "bin")
         dir_include = os.path.join(pkgprefix, "include")
         dir_lib = os.path.join(pkgprefix, "lib")
@@ -71,16 +71,16 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         tools.modify_env(envset, envprepend)
 
         os.environ["SPECEX_PREFIX"] = pkgprefix
-        
+
         com = ["make", "install"]
         tools.live_report(com, pkg)
-        
+
         del os.environ["SPECEX_PREFIX"]
 
     elif pkg == "fiberassign":
-        
+
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
 
         if not os.path.isdir(dir_bin):
@@ -98,7 +98,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         os.environ["INSTALL"] = dir_bin
         os.environ["PLATFORM"] = "nersc_desiconda"
-        
+
         com = ["make", "install"]
         tools.live_report(com, pkg)
 
@@ -112,7 +112,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         dir_module = os.path.join(dir_pysite, "fiberassign")
         if os.path.isdir(dir_module):
             shutil.rmtree(dir_module)
-        shutil.copytree(os.path.join("py", "fiberassign"), 
+        shutil.copytree(os.path.join("py", "fiberassign"),
             dir_module)
 
         # compile python modules
@@ -122,7 +122,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     elif pkg == "redmonster":
 
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
 
         dir_redtemp = pkgprefix
@@ -178,13 +178,13 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
 
         if os.path.isdir(dir_templates):
             shutil.rmtree(dir_templates)
-        shutil.copytree(".", dir_templates, 
+        shutil.copytree(".", dir_templates,
             ignore=shutil.ignore_patterns(".git"))
 
     elif pkg == "teststand":
 
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
 
         if not os.path.isdir(dir_bin):
@@ -204,7 +204,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
         dir_module = os.path.join(dir_pysite, "teststand")
         if os.path.isdir(dir_module):
             shutil.rmtree(dir_module)
-        shutil.copytree(os.path.join("py", "teststand"), 
+        shutil.copytree(os.path.join("py", "teststand"),
             dir_module)
 
         dir_data = os.path.join(pkgprefix, "data")
@@ -219,7 +219,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     elif pkg == "desimodel":
 
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
         dir_model = pkgprefix
         if common:
@@ -275,7 +275,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     elif pkg == "desisim":
 
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
 
         if not os.path.isdir(dir_bin):
@@ -301,7 +301,7 @@ def install_pkg(pkg, version, prefix, desiroot, basisdir, common=False):
     else:
 
         dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver), 
+        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
             "site-packages")
 
         if not os.path.isdir(dir_bin):
@@ -398,7 +398,7 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
         here = os.path.abspath(os.getcwd())
         os.chdir(os.path.join(here, pkg["name"]))
 
-        envset, envprepend = install_pkg(pkg["name"], pkg["version"], 
+        envset, envprepend = install_pkg(pkg["name"], pkg["version"],
             prefix, desiroot, basisdir, common)
         allset.extend(envset)
         allprepend.extend(envprepend)
@@ -445,7 +445,7 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
     # Create a shell file that can be sourced as an alternative to using
     # modulefiles.
 
-    setupfile = os.path.join(prefix, "setup.sh")
+    setupfile = os.path.join(prefix, "setup_desi_{}.sh".format(desiversion))
     write_setupfile(setupfile, allset, uniqprepend)
 
     # Create the top-level "desi" modulefile
@@ -461,10 +461,10 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
         with open(initfile, "r") as f:
             for line in f:
                 deplines.append(line)
-    
+
     if common:
         # In this case we dump all the environment modifications into
-        # the top level module file.    
+        # the top level module file.
         write_modulefile(moddesi, "desi", desiversion, allset, uniqprepend, deplines, [])
     else:
         # Instead, we add lines that load the per-package modulefiles.
@@ -477,7 +477,7 @@ def install_packages(pkgs, prefix, moddir, buildver, desiroot, basisdir, initfil
             loads.append("    module load {}/{}".format(pkg["name"], pkg["version"]))
             loads.append("  }")
             loads.append("}")
-        write_modulefile(moddesi, "desi", desiversion, desivars, [], 
+        write_modulefile(moddesi, "desi", desiversion, desivars, [],
             deplines, loads)
 
     write_moduleversion(modver, desiversion)
@@ -497,7 +497,7 @@ parser.add_argument("--prefix", required=True, type=str, default=None,
 parser.add_argument("--desiroot", required=False, type=str, default=None,
     help="The directory to use for the DESI_ROOT environment variable.")
 
-parser.add_argument("--basisdir", required=False, type=str, 
+parser.add_argument("--basisdir", required=False, type=str,
     default="spectro/templates/basis_templates/v2.3",
     help="The subdirectory of DESI_ROOT containing the basis template files.")
 
@@ -505,7 +505,7 @@ parser.add_argument("--gitdir", required=False, type=str, default=None,
     help="Directory containing the git clones of DESI packages.  "
     "Defaults to current directory.")
 
-parser.add_argument("--common", required=False, action="store_true", 
+parser.add_argument("--common", required=False, action="store_true",
     default=False, help="Install all packages to a common prefix, rather than "
     "versioned subdirectories")
 
@@ -591,7 +591,7 @@ if args.single is not None:
         if pkg["name"] != args.single:
             continue
         os.chdir(pkg["name"])
-        envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix, 
+        envset, envprepend = install_pkg(pkg["name"], pkg["version"], args.prefix,
             args.desiroot, args.basisdir, args.common)
         os.chdir("..")
 
@@ -610,7 +610,7 @@ if args.single is not None:
 
 else:
     # install all packages
-    install_packages(pkgs, args.prefix, moddir, buildver, args.desiroot, 
+    install_packages(pkgs, args.prefix, moddir, buildver, args.desiroot,
         args.basisdir, initfile, common=args.common)
 
 # Back to where we started
