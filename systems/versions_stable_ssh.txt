@@ -1,5 +1,5 @@
 desiutil            git@github.com:desihub/desiutil.git             1.9.11
-desimodel           git@github.com:desihub/desimodel.git            0.9.7
+desimodel           git@github.com:desihub/desimodel.git            0.9.6
 specsim             git@github.com:desihub/specsim.git              v0.13
 specter             git@github.com:desihub/specter.git              0.8.7
 specex              git@github.com:desihub/specex.git               0.6.1

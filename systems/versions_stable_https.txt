@@ -1,5 +1,5 @@
 desiutil            https://github.com/desihub/desiutil.git             1.9.11
-desimodel           https://github.com/desihub/desimodel.git	        0.9.7
+desimodel           https://github.com/desihub/desimodel.git	        0.9.6
 specsim             https://github.com/desihub/specsim.git              v0.13
 specter             https://github.com/desihub/specter.git              0.8.7
 specex              https://github.com/desihub/specex.git               0.6.1
