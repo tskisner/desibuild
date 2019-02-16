@@ -77,51 +77,6 @@ def install_pkg(pkg, version, prefix, common=False):
 
         del os.environ["SPECEX_PREFIX"]
 
-    elif pkg == "fiberassign":
-
-        dir_bin = os.path.join(pkgprefix, "bin")
-        dir_pysite = os.path.join(pkgprefix, "lib", "python{}".format(pyver),
-            "site-packages")
-
-        if not os.path.isdir(dir_bin):
-            os.makedirs(dir_bin)
-        if not os.path.isdir(dir_pysite):
-            os.makedirs(dir_pysite)
-
-        envprepend.append( ("PATH", dir_bin) )
-        envprepend.append( ("PYTHONPATH", dir_pysite) )
-
-        tools.modify_env(envset, envprepend)
-
-        # Install the compiled tools.  Use the harpconfig tool
-        # to get the compiler flags on this system.
-
-        os.environ["INSTALL"] = dir_bin
-        os.environ["PLATFORM"] = "nersc_desiconda"
-
-        com = ["make"]
-        tools.live_report(com, pkg)
-
-        com = ["make", "install"]
-        tools.live_report(com, pkg)
-
-        del os.environ["INSTALL"]
-        del os.environ["PLATFORM"]
-
-        # copy scripts and python modules
-
-        tools.copy_scripts("bin", dir_bin)
-
-        dir_module = os.path.join(dir_pysite, "fiberassign")
-        if os.path.isdir(dir_module):
-            shutil.rmtree(dir_module)
-        shutil.copytree(os.path.join("py", "fiberassign"),
-            dir_module)
-
-        # compile python modules
-
-        compileall.compile_dir(dir_pysite, force=True, quiet=1)
-
     elif pkg == "redmonster":
 
         dir_bin = os.path.join(pkgprefix, "bin")
@@ -317,6 +272,9 @@ def install_pkg(pkg, version, prefix, common=False):
         tools.modify_env(envset, envprepend)
 
         # install the python package
+
+        com = ["python", "setup.py", "clean"]
+        tools.live_report(com, pkg)
 
         com = ["python", "setup.py", "install", "--prefix", pkgprefix]
         tools.live_report(com, pkg)
