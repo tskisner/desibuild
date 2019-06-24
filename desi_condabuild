@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import (absolute_import, division, print_function, 
-    unicode_literals)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 import os
@@ -26,12 +30,22 @@ from desibuild import clr as clr
 
 parser = argparse.ArgumentParser(description="Build conda packages.")
 
-parser.add_argument("--versions", required=True, type=str, default=None,
+parser.add_argument(
+    "--versions",
+    required=True,
+    type=str,
+    default=None,
     help="Path to the versions file.  File format is 3 columns of "
-    "<package name> <git URL> <branch/tag name>.")
+    "<package name> <git URL> <branch/tag name>.",
+)
 
-parser.add_argument("--upload", required=False, action="store_true", 
-    default=False, help="Do not build packages, just upload")
+parser.add_argument(
+    "--upload",
+    required=False,
+    action="store_true",
+    default=False,
+    help="Do not build packages, just upload",
+)
 
 args = parser.parse_args()
 
@@ -53,13 +67,19 @@ if args.upload:
     condaroot = os.path.dirname(conda.rstrip())
     condabld = os.path.join(condaroot, "..", "conda-bld")
 
-    plat = sp.check_output("conda info | grep platform | awk '{print $3}'", shell=True, universal_newlines=True)
+    plat = sp.check_output(
+        "conda info | grep platform | awk '{print $3}'",
+        shell=True,
+        universal_newlines=True,
+    )
 
     platdir = os.path.join(condabld, plat.rstrip())
 
     for pkg in pkgs:
         print("Uploading package {}".format(pkg["name"]))
-        tarball = os.path.join(platdir, "{}-{}-0.tar.bz2".format(pkg["name"], pkg["version"]))
+        tarball = os.path.join(
+            platdir, "{}-{}-0.tar.bz2".format(pkg["name"], pkg["version"])
+        )
         sp.check_call("anaconda upload {}".format(tarball), shell=True)
 
 else:
@@ -75,9 +95,16 @@ else:
 
         # Process all package input files
 
-        scriptmod = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-                    | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
-                    | stat.S_IROTH | stat.S_IXOTH)
+        scriptmod = (
+            stat.S_IRUSR
+            | stat.S_IWUSR
+            | stat.S_IXUSR
+            | stat.S_IRGRP
+            | stat.S_IWGRP
+            | stat.S_IXGRP
+            | stat.S_IROTH
+            | stat.S_IXOTH
+        )
 
         inpat = re.compile(r"(.*)\.in")
         shpat = re.compile(r"(.*)\.sh")
@@ -93,10 +120,16 @@ else:
                         with open(filein, "r") as input:
                             for line in input:
                                 for other in pkgs:
-                                    line = re.sub("@{}_version@".format(other["name"]), 
-                                        other["version"], line)
-                                    line = re.sub("@{}_url@".format(other["name"]), 
-                                        other["url"], line)
+                                    line = re.sub(
+                                        "@{}_version@".format(other["name"]),
+                                        other["version"],
+                                        line,
+                                    )
+                                    line = re.sub(
+                                        "@{}_url@".format(other["name"]),
+                                        other["url"],
+                                        line,
+                                    )
                                 output.write(line)
                     purge.append(fileout)
                     if shpat.match(fileout) is not None:
@@ -113,4 +146,3 @@ else:
         for f in purge:
             if os.path.isfile(f):
                 os.remove(f)
-

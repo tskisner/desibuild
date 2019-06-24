@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import (absolute_import, division, print_function, 
-    unicode_literals)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 import os
@@ -23,24 +27,41 @@ from desibuild import clr as clr
 
 def gitreport(out, err):
     for line in out:
-        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, 
-            clr.LGRAY, line, clr.ENDC))
+        print(
+            "    {}|git|{}: {}{}{}".format(
+                clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC
+            )
+        )
     for line in err:
-        print("    {}|git|{}: {}{}{}".format(clr.LMAGENTA, clr.ENDC, 
-            clr.LGRAY, line, clr.ENDC))
+        print(
+            "    {}|git|{}: {}{}{}".format(
+                clr.LMAGENTA, clr.ENDC, clr.LGRAY, line, clr.ENDC
+            )
+        )
     return
 
 
 # Get our options
 
-parser = argparse.ArgumentParser(description="Create or update local "
-    "checkouts of packages.")
-parser.add_argument("--versions", required=True, type=str, default=None,
+parser = argparse.ArgumentParser(
+    description="Create or update local checkouts of packages."
+)
+parser.add_argument(
+    "--versions",
+    required=True,
+    type=str,
+    default=None,
     help="Path to the versions file.  File format is 3 columns of "
-    "<package name> <git URL> <branch/tag name>.")
-parser.add_argument("--gitdir", required=False, type=str, default=None,
+    "<package name> <git URL> <branch/tag name>.",
+)
+parser.add_argument(
+    "--gitdir",
+    required=False,
+    type=str,
+    default=None,
     help="Directory containing the git clones of DESI packages.  "
-    "Defaults to current directory.")
+    "Defaults to current directory.",
+)
 
 
 args = parser.parse_args()
@@ -85,7 +106,7 @@ for pkg in pkgs:
     com = ["git", "tag", "--list"]
     out, err = tools.sprun(com)
     gitreport([], err)
-    
+
     is_a_tag = False
     if pkg["version"] in out:
         is_a_tag = True
@@ -96,7 +117,7 @@ for pkg in pkgs:
     allbranch, err = tools.sprun(com)
     gitreport([], err)
 
-    branches = [ re.sub(r"[\*]*\s+", "", x) for x in allbranch ]
+    branches = [re.sub(r"[\*]*\s+", "", x) for x in allbranch]
 
     if is_a_tag:
         print("  version {} is a valid git tag".format(pkg["version"]))
@@ -107,13 +128,27 @@ for pkg in pkgs:
         workb = "work-{}".format(pkg["version"])
 
         if workb in branches:
-            print("  checking out existing working branch for tag {}".format(pkg["version"]))
+            print(
+                "  checking out existing working branch for tag {}".format(
+                    pkg["version"]
+                )
+            )
             com = ["git", "checkout", workb]
             out, err = tools.sprun(com)
             gitreport(out, err)
         else:
-            print("  creating new working branch for tag {}".format(pkg["version"]))
-            com = ["git", "checkout", "-b", workb, "tags/{}".format(pkg["version"])]
+            print(
+                "  creating new working branch for tag {}".format(
+                    pkg["version"]
+                )
+            )
+            com = [
+                "git",
+                "checkout",
+                "-b",
+                workb,
+                "tags/{}".format(pkg["version"]),
+            ]
             out, err = tools.sprun(com)
             gitreport(out, err)
 
@@ -121,19 +156,34 @@ for pkg in pkgs:
         # Do we already have a local branch tracking the remote?
 
         if pkg["version"] in branches:
-            print("  checking out existing local branch {}".format(pkg["version"]))
+            print(
+                "  checking out existing local branch {}".format(
+                    pkg["version"]
+                )
+            )
             com = ["git", "checkout", pkg["version"]]
             out, err = tools.sprun(com)
             gitreport(out, err)
 
-            print("  rebasing local branch {} against origin".format(pkg["version"]))
+            print(
+                "  rebasing local branch {} against origin".format(
+                    pkg["version"]
+                )
+            )
             com = ["git", "rebase", "origin/{}".format(pkg["version"])]
             out, err = tools.sprun(com)
             gitreport(out, err)
 
         else:
             print("  creating local branch {}".format(pkg["version"]))
-            com = ["git", "checkout", "-b", pkg["version"], "-t", "origin/{}".format(pkg["version"])]
+            com = [
+                "git",
+                "checkout",
+                "-b",
+                pkg["version"],
+                "-t",
+                "origin/{}".format(pkg["version"]),
+            ]
             out, err = tools.sprun(com)
             gitreport(out, err)
 
@@ -141,18 +191,32 @@ for pkg in pkgs:
 
     if pkg["name"] == "specex":
         com = ["make", "clean"]
-    elif pkg["name"] == "fiberassign":
-        com = ["make", "clean"]
     else:
         com = None
-    
+
     if com is not None:
         out, err = tools.sprun(com)
         for line in out:
-            print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, pkg["name"], clr.ENDC, clr.LGRAY, line, clr.ENDC))
+            print(
+                "    {}|{}|{}: {}{}{}".format(
+                    clr.LMAGENTA,
+                    pkg["name"],
+                    clr.ENDC,
+                    clr.LGRAY,
+                    line,
+                    clr.ENDC,
+                )
+            )
         for line in err:
-            print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, pkg["name"], clr.ENDC, clr.LGRAY, line, clr.ENDC))
+            print(
+                "    {}|{}|{}: {}{}{}".format(
+                    clr.LMAGENTA,
+                    pkg["name"],
+                    clr.ENDC,
+                    clr.LGRAY,
+                    line,
+                    clr.ENDC,
+                )
+            )
 
     os.chdir("..")
-
-

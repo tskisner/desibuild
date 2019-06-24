@@ -1,7 +1,11 @@
 # Utility functions used by the desibuild scripts.
 
-from __future__ import (absolute_import, division, print_function, 
-    unicode_literals)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 import os
@@ -32,6 +36,7 @@ class clr:
     LCYAN = "\033[96m"
     WHITE = "\033[97m"
     ENDC = "\033[0m"
+
     def disable(self):
         DEFAULT = ""
         BLACK = ""
@@ -66,16 +71,34 @@ def sprun(com):
 
 
 def live_report(com, label):
-    p = sp.Popen(com, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True)
+    p = sp.Popen(
+        com, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True
+    )
     for line in p.stdout:
-        print("    {}|{}|{}: {}{}{}".format(clr.LMAGENTA, label, clr.ENDC, clr.LGRAY, line.splitlines()[0], clr.ENDC))
+        print(
+            "    {}|{}|{}: {}{}{}".format(
+                clr.LMAGENTA,
+                label,
+                clr.ENDC,
+                clr.LGRAY,
+                line.splitlines()[0],
+                clr.ENDC,
+            )
+        )
     return
 
 
 def copy_scripts(source, dest):
-    scriptmod = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
-                | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
-                | stat.S_IROTH | stat.S_IXOTH)
+    scriptmod = (
+        stat.S_IRUSR
+        | stat.S_IWUSR
+        | stat.S_IXUSR
+        | stat.S_IRGRP
+        | stat.S_IWGRP
+        | stat.S_IXGRP
+        | stat.S_IROTH
+        | stat.S_IXOTH
+    )
     names = os.listdir(source)
     for name in names:
         src = os.path.join(source, name)
@@ -108,7 +131,7 @@ def modify_env(envset, envprepend):
     for t in envprepend:
         cur = ""
         if t[0] in os.environ:
-           cur = os.environ[t[0]]
+            cur = os.environ[t[0]]
         new = None
         if cur != "":
             new = "{}:{}".format(t[1], cur)
@@ -155,6 +178,5 @@ def build_version(scriptdir):
 
 def desi_version(buildver, depstr):
     dephash = md5(depstr.encode(encoding="ascii")).hexdigest()[:6]
-    #datestr = time.strftime("%Y%m%d", time.localtime(time.time()))
+    # datestr = time.strftime("%Y%m%d", time.localtime(time.time()))
     return "{}-{}".format(buildver, dephash)
-
